@@ -1,6 +1,6 @@
 ---
 title: "Entrega grupal"
-author: "Pablo Gómez (DNI: 03214857D), Wenxiang Xia (DNI:X7276507C), Javier Figueiredo Tor (DNI:06341629T)"
+author: "Pablo Gómez (DNI: 03214857D), Wenxiang Xia (DNI:X7276507C), Javier Figueiredo Tor (DNI:06341629T), Cyan Morales (DNI: 02780780B)"
 format:
   revealjs:
     theme: [style.scss]
@@ -110,21 +110,21 @@ Además de lo que consideres oportuno realizar, los siguientes elementos son obl
 1.  Los datos deben ser convertidos a tidydata donde sea apropiado.
 
     ```{r}
-# abbrev, cod_mun ya están en formato tidydata.
+    # abbrev, cod_mun ya están en formato tidydata.
 
-# election_data y surveys no están en formato tidydata ya que en cada fila nos encontramos con los votos en cada municipio para todos los partidos. Una fila solo debe contener una única observación.
-election_data <-
-  election_data |>
-  pivot_longer(cols = -c(tipo_eleccion:votos_candidaturas),
+    # election_data y surveys no están en formato tidydata ya que en cada fila nos encontramos con los votos en cada municipio para todos los partidos. Una fila solo debe contener una única observación.
+    election_data <-
+      election_data |>
+      pivot_longer(cols = -c(tipo_eleccion:votos_candidaturas),
                names_to = "partidos", values_to = "votos",
                values_drop_na = TRUE) |>
-  mutate(across(where(is.logical), as.numeric))
-surveys <-
-  surveys |>
-  pivot_longer(cols = -c(type_survey:turnout),
+      mutate(across(where(is.logical), as.numeric))
+    surveys <-
+      surveys |>
+      pivot_longer(cols = -c(type_survey:turnout),
                names_to = "partido", values_to = "puntuacion",
                values_drop_na = TRUE) |>
-  mutate(across(where(is.logical), as.numeric))
+      mutate(across(where(is.logical), as.numeric))
     ```
 
 2.  Debes incluir al menos un join entre tablas.
@@ -176,6 +176,7 @@ election_data <-
 -   EH - BILDU (ahora son una coalición de partidos formada por Sortu, Eusko Alkartasuna, Aralar, Alternatiba).
 -   MÁS PAÍS
 -   VOX
+
 ```{r}
 
 election_data <-
@@ -234,11 +235,11 @@ encuestas_filtradas <- surveys |>
 12. Deberás responder obligatoriamente a las siguientes preguntas (más aquellas que consideres analizar para distinguirte del resto)
 
 -   ¿Qué partido fue el ganador en los municipios con más de 100.000 habitantes (censo) en cada una de las elecciones?
+
 ```{r}
 #FILTRAR MUNICIPOS DE MAS DE 100000 HABITANTES Y SUMAR LOS VOTOS POR CADA PARTIDO
 
 ```
-
 
 -   ¿Qué partido fue el segundo cuando el primero fue el PSOE? ¿Y cuando el primero fue el PP?
 
@@ -274,7 +275,6 @@ Una vez que tengas los elementos obligatorios de tu base de datos más o menos c
 
 Recuerda que el objetivo real es demostrar un dominio de las herramientas vistas a lo largo del curso. Y eso no se mide solo por la cantidad de herramientas utilizadas, sino también por la calidad en su ejecución.
 
-Deberéis tenerlo todo subido a Github con el enlace generado de manera correcta.
-Recuerda que el objetivo real es demostrar un dominio de las herramientas vistas a lo largo del curso. Y eso no se mide solo por la cantidad de herramientas utilizadas, sino también por la calidad en su ejecución.
+Deberéis tenerlo todo subido a Github con el enlace generado de manera correcta. Recuerda que el objetivo real es demostrar un dominio de las herramientas vistas a lo largo del curso. Y eso no se mide solo por la cantidad de herramientas utilizadas, sino también por la calidad en su ejecución.
 
 Deberéis tenerlo todo subido a Github con el enlace generado de manera correcta.

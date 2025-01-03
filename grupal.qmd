@@ -1,6 +1,6 @@
 ---
 title: "Entrega grupal"
-author: "Pablo Gómez (DNI: 03214857D), Wenxiang Xia (DNI:X7276507C), Javier Figueiredo Tor (DNI:06341629T)"
+author: "Pablo Gómez (DNI: 03214857D), Wenxiang Xia (DNI:X7276507C), Javier Figueiredo Tor (DNI:06341629T), Cyan Morales (DNI: 02780780B)"
 format:
   revealjs:
     theme: [style.scss]

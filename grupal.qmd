@@ -237,7 +237,19 @@ encuestas_filtradas <- surveys |>
 -   ¿Qué partido fue el ganador en los municipios con más de 100.000 habitantes (censo) en cada una de las elecciones?
 
 ```{r}
-#FILTRAR MUNICIPOS DE MAS DE 100000 HABITANTES Y SUMAR LOS VOTOS POR CADA PARTIDO
+
+municipios_grandes <- election_data |> 
+  filter(censo > 100000)
+
+
+ganadores <- municipios_grandes |> 
+  group_by(tipo_eleccion, anno, codigo_municipio) |> 
+  summarise(
+    Partido_Ganador = partidos[which.max(votos)],
+    Votos_Ganador = max(votos),
+    .groups = "drop" 
+  )
+
 
 ```
 

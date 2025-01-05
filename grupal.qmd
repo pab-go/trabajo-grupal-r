@@ -110,21 +110,21 @@ Además de lo que consideres oportuno realizar, los siguientes elementos son obl
 1.  Los datos deben ser convertidos a tidydata donde sea apropiado.
 
     ```{r}
-# abbrev, cod_mun ya están en formato tidydata.
+    # abbrev, cod_mun ya están en formato tidydata.
 
-# election_data y surveys no están en formato tidydata ya que en cada fila nos encontramos con los votos en cada municipio para todos los partidos. Una fila solo debe contener una única observación.
-election_data <-
-  election_data |>
-  pivot_longer(cols = -c(tipo_eleccion:votos_candidaturas),
+    # election_data y surveys no están en formato tidydata ya que en cada fila nos encontramos con los votos en cada municipio para todos los partidos. Una fila solo debe contener una única observación.
+    election_data <-
+      election_data |>
+      pivot_longer(cols = -c(tipo_eleccion:votos_candidaturas),
                names_to = "partidos", values_to = "votos",
                values_drop_na = TRUE) |>
-  mutate(across(where(is.logical), as.numeric))
-surveys <-
-  surveys |>
-  pivot_longer(cols = -c(type_survey:turnout),
+      mutate(across(where(is.logical), as.numeric))
+    surveys <-
+      surveys |>
+      pivot_longer(cols = -c(type_survey:turnout),
                names_to = "partido", values_to = "puntuacion",
                values_drop_na = TRUE) |>
-  mutate(across(where(is.logical), as.numeric))
+      mutate(across(where(is.logical), as.numeric))
     ```
 
 2.  Debes incluir al menos un join entre tablas.
@@ -136,7 +136,7 @@ surveys <-
 election_data_dist <- election_data |> summarise(across(everything(), n_distinct))
 cod_mun_dist <- cod_mun |> summarise(across(everything(), n_distinct))
 surveys_dist <- surveys |> summarise(across(everything(), n_distinct))
-abbrev_dist <- abbrev_dist |> summarise(across(everything(), n_distinct))
+abbrev_dist <- abbrev |> summarise(across(everything(), n_distinct)) 
 
 # en tres (tipo_eleccion, vuelta, codigo_distrito_electoral) tenemos 
 # un solo valor cte --> no nos aporta nada
@@ -144,6 +144,7 @@ abbrev_dist <- abbrev_dist |> summarise(across(everything(), n_distinct))
 election_data <-
   election_data |> 
   select(-c(tipo_eleccion, vuelta, codigo_distrito_electoral))
+surveys <- surveys |> select(-type_survey)
 ```
 
 4.  Los paquetes `{glue}`, `{forcats}` y `{lubridate}` deben ser utilizados en algún punto
@@ -176,6 +177,7 @@ election_data <-
 -   EH - BILDU (ahora son una coalición de partidos formada por Sortu, Eusko Alkartasuna, Aralar, Alternatiba).
 -   MÁS PAÍS
 -   VOX
+
 ```{r}
 
 election_data <-
@@ -191,10 +193,9 @@ str_detect(partidos, "ESQUERRA REPUBLICANA DE CAT") ~ "ERC",
 str_detect(partidos, "SORTU|EUSKO ALKARTASUNA|ARALAR|ALTERNATIBA")~"BILDU",
 str_detect(partidos, "MÁS PAÍS|MAS PAIS|MÁS PAIS|MAS PAÍS") ~ "MP",
 str_detect(partidos, "VOX") ~ "VOX",
-str_detect(partidos,"CONVERGÈNCIA I UNIÓ")~"CONVERGÈNCIA I UNIÓ"
+str_detect(partidos,"CONVERGÈNCIA I UNIÓ")~"CONVERGÈNCIA I UNIÓ",
 TRUE ~ "OTROS"))
 
-election_data <- election_data |> filter(siglas!="OTROS")
 
 ```
 
@@ -234,17 +235,123 @@ encuestas_filtradas <- surveys |>
 12. Deberás responder obligatoriamente a las siguientes preguntas (más aquellas que consideres analizar para distinguirte del resto)
 
 -   ¿Qué partido fue el ganador en los municipios con más de 100.000 habitantes (censo) en cada una de las elecciones?
+
 ```{r}
-#FILTRAR MUNICIPOS DE MAS DE 100000 HABITANTES Y SUMAR LOS VOTOS POR CADA PARTIDO
+
+library(dplyr)
+library(glue)
+
+# Transformar los datos y generar identificadores
+election_data <- election_data |> 
+  mutate(
+    id_mun = (glue("{codigo_ccaa}-{codigo_provincia}-{codigo_municipio}")),
+    fecha = (as_date(glue("{anno}-{mes}-01")))
+  )  |> 
+  select(-anno, -mes, -codigo_ccaa, -codigo_provincia, -codigo_municipio) |> 
+  select(fecha, id_mun, everything())
+
+# Filtrar municipios con más de 100,000 habitantes
+# Encontrar el partido ganador usando summarise y max
+ganadores <- election_data |> 
+  filter(censo >= 100000) |> 
+  group_by(id_mun, fecha) |> 
+  slice_max(order_by = votos, n = 1) |>  # Máximo voto por grupo
+  ungroup() |>
+  select(id_mun, fecha, siglas, votos)
+# Mostrar los resultados
+print(ganadores)
+
+#Inner join para saber el nombre del municipio
+ganadores <- ganadores |> 
+  inner_join(cod_mun, by = c("id_mun"="cod_mun"))
+
 
 ```
-
 
 -   ¿Qué partido fue el segundo cuando el primero fue el PSOE? ¿Y cuando el primero fue el PP?
 
 -   ¿A quién beneficia la baja participación?
 
+```{r}
+
+participacion <-
+  election_data |>
+  mutate("votos_totales" = votos_candidaturas + votos_blancos + votos_nulos, "participacion" = 100 * votos_totales / censo) |> # Calcular el porcentaje de participación
+  group_by(fecha, id_mun, siglas, votos_totales, participacion) |> # Agrupar para sumar los valores repetidos de OTROS
+  summarize(votos = sum(votos), .groups = "drop") |>
+  mutate("porcentaje_votos" = votos / votos_totales) |>
+  select(-votos, -votos_totales)
+
+corr_participacion <-
+  participacion |>
+  group_by(siglas) |>
+  summarize(correlacion = cor(participacion, porcentaje_votos, use = "complete.obs")) |>
+  arrange(correlacion)
+
+# Cuanto menor es el valor de correlación, más se beneficia los votos del partido por la baja participacion.
+
+# Gráficos
+ggplot(corr_participacion, aes(x = reorder(siglas, correlacion), y = correlacion, fill = correlacion)) +
+  geom_bar(stat = "identity", show.legend = FALSE) +  # Bar chart
+  coord_flip() +  # Flip coordinates for horizontal bars
+  labs(
+    title = "Correlación entre baja participación y resultados para cada partido",
+    x = "Partido (siglas)",
+    y = "Correlación"
+  ) +
+  theme_minimal()
+
+
+```
+
 -   ¿Cómo analizar la relación entre censo y voto? ¿Es cierto que determinados partidos ganan en las zonas rurales?
+
+```{r}
+library(ggplot2)
+
+election_data_rcs <- election_data |> 
+    mutate("participacion" = 100*(votos_candidaturas + votos_blancos + votos_nulos) / censo) |> slice(1,.by = participacion)
+
+
+##GRAFICO RELACION CENSO Y VOTO
+ggplot(election_data_rcs, aes(x = censo, y = participacion)) +
+  geom_point(aes(color = participacion), size = 3, alpha = 0.7) +  # Puntos de dispersión
+  geom_smooth(method = "lm", color = "blue", se = TRUE, linetype = "dashed") +  # Línea de regresión
+  scale_color_gradient(low = "yellow", high = "red", name = "Participación (%)") +  # Gradiente de color
+  labs(
+    title = "Relación entre Censo y Participación",
+    subtitle = "Datos simulados de participación electoral",
+    x = "Censo (número de votantes)",
+    y = "Participación (%)",
+    caption = "Fuente: Datos simulados"
+  ) +
+  theme_minimal(base_size = 14) +  # Tema minimalista
+  theme(
+    plot.title = element_text(face = "bold", size = 12, hjust = 0.5),  # Personalización del título
+    plot.subtitle = element_text(size = 9, hjust = 0.5),
+    axis.title.x = element_text(size = 8),
+    axis.title.y = element_text(size = 8),
+    legend.position = "top"  # Posición de la leyenda
+  )
+
+
+```
+
+```{r}
+##AHora lo haremos para las zonas rurales, es decir, con menos de 2500 habitantes
+ganadores2 <- election_data |> 
+  mutate(
+    id_mun = (glue("{codigo_ccaa}-{codigo_provincia}-{codigo_municipio}")),
+    fecha = (as_date(glue("{anno}-{mes}-01")))
+  ) |> 
+  filter(censo <= 2500) |> 
+  group_by(id_mun, fecha) |> 
+  slice_max(order_by = votos, n = 1) |>  # Máximo voto por grupo
+  ungroup() 
+
+ ggplot(ganadores2)+geom_bar(aes(x= siglas))
+ 
+```
 
 ------------------------------------------------------------------------
 
@@ -273,6 +380,8 @@ Se valorará la originalidad (en comparación con el resto de trabajos, ya sea e
 Una vez que tengas los elementos obligatorios de tu base de datos más o menos completos, piensa antes de escribir código: ¿qué podría ser interesante? ¿Qué necesito para obtener un resumen tanto numérico como visual?
 
 Recuerda que el objetivo real es demostrar un dominio de las herramientas vistas a lo largo del curso. Y eso no se mide solo por la cantidad de herramientas utilizadas, sino también por la calidad en su ejecución.
+
+Deberéis tenerlo todo subido a Github con el enlace generado de manera correcta. Recuerda que el objetivo real es demostrar un dominio de las herramientas vistas a lo largo del curso. Y eso no se mide solo por la cantidad de herramientas utilizadas, sino también por la calidad en su ejecución.
 
 Deberéis tenerlo todo subido a Github con el enlace generado de manera correcta.
 Recuerda que el objetivo real es demostrar un dominio de las herramientas vistas a lo largo del curso. Y eso no se mide solo por la cantidad de herramientas utilizadas, sino también por la calidad en su ejecución.

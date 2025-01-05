@@ -242,18 +242,22 @@ library(dplyr)
 library(glue)
 
 # Transformar los datos y generar identificadores
-election_data_censo_grande <- election_data |> 
+election_data <- election_data |> 
   mutate(
     id_mun = (glue("{codigo_ccaa}-{codigo_provincia}-{codigo_municipio}")),
     fecha = (as_date(glue("{anno}-{mes}-01")))
-  )  # Filtrar municipios con más de 100,000 habitantes
+  )  |> 
+  select(-anno, -mes, -codigo_ccaa, -codigo_provincia, -codigo_municipio) |> 
+  select(fecha, id_mun, everything())
 
+# Filtrar municipios con más de 100,000 habitantes
 # Encontrar el partido ganador usando summarise y max
-ganadores <- election_data_censo_grande |> 
+ganadores <- election_data |> 
   filter(censo >= 100000) |> 
   group_by(id_mun, fecha) |> 
   slice_max(order_by = votos, n = 1) |>  # Máximo voto por grupo
-  ungroup()|> select(id_mun, fecha, siglas, votos)
+  ungroup() |>
+  select(id_mun, fecha, siglas, votos)
 # Mostrar los resultados
 print(ganadores)
 
@@ -268,7 +272,40 @@ ganadores <- ganadores |>
 
 -   ¿A quién beneficia la baja participación?
 
+```{r}
+
+participacion <-
+  election_data |>
+  mutate("votos_totales" = votos_candidaturas + votos_blancos + votos_nulos, "participacion" = 100 * votos_totales / censo) |> # Calcular el porcentaje de participación
+  group_by(fecha, id_mun, siglas, votos_totales, participacion) |> # Agrupar para sumar los valores repetidos de OTROS
+  summarize(votos = sum(votos), .groups = "drop") |>
+  mutate("porcentaje_votos" = votos / votos_totales) |>
+  select(-votos, -votos_totales)
+
+corr_participacion <-
+  participacion |>
+  group_by(siglas) |>
+  summarize(correlacion = cor(participacion, porcentaje_votos, use = "complete.obs")) |>
+  arrange(correlacion)
+
+# Cuanto menor es el valor de correlación, más se beneficia los votos del partido por la baja participacion.
+
+# Gráficos
+ggplot(corr_participacion, aes(x = reorder(siglas, correlacion), y = correlacion, fill = correlacion)) +
+  geom_bar(stat = "identity", show.legend = FALSE) +  # Bar chart
+  coord_flip() +  # Flip coordinates for horizontal bars
+  labs(
+    title = "Correlación entre baja participación y resultados para cada partido",
+    x = "Partido (siglas)",
+    y = "Correlación"
+  ) +
+  theme_minimal()
+
+
+```
+
 -   ¿Cómo analizar la relación entre censo y voto? ¿Es cierto que determinados partidos ganan en las zonas rurales?
+
 ```{r}
 library(ggplot2)
 

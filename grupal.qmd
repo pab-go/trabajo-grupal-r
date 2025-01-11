@@ -269,6 +269,48 @@ ganadores <- ganadores |>
 
 -   ¿Qué partido fue el segundo cuando el primero fue el PSOE? ¿Y cuando el primero fue el PP?
 
+    ```{r}
+    resultado_PSOE <- election_data |> 
+      group_by(fecha, id_mun) |> 
+      arrange(desc(votos)) |> 
+      mutate(ranking = row_number()) |> 
+      filter(ranking == 1 & siglas == "PSOE") |> 
+    # Hacer un join con los datos del segundo partido más votado en los mismos grupos
+      left_join(
+        election_data |> 
+          group_by(fecha, id_mun) |> 
+          arrange(desc(votos)) |> 
+          mutate(ranking = row_number()) |> 
+          filter(ranking == 2) |> 
+          select(fecha, id_mun, siglas_segundo = siglas, votos_segundo = votos),
+        by = c("fecha", "id_mun")
+      ) |> 
+      select(fecha, id_mun, censo, participacion_1, participacion_2, 
+             siglas_primero = siglas, votos_primero = votos, 
+             siglas_segundo, votos_segundo)
+
+    #para el ver con el PP solo hace falta cambiar el nombre
+
+    resultado_PP <- election_data |> 
+      group_by(fecha, id_mun) |> 
+      arrange(desc(votos)) |> 
+      mutate(ranking = row_number()) |> 
+      filter(ranking == 1 & siglas == "PP") |> 
+    # Hacer un join con los datos del segundo partido más votado en los mismos grupos
+      left_join(
+        election_data |> 
+          group_by(fecha, id_mun) |> 
+          arrange(desc(votos)) |> 
+          mutate(ranking = row_number()) |> 
+          filter(ranking == 2) |> 
+          select(fecha, id_mun, siglas_segundo = siglas, votos_segundo = votos),
+        by = c("fecha", "id_mun")
+      ) |> 
+      select(fecha, id_mun, censo, participacion_1, participacion_2, 
+             siglas_primero = siglas, votos_primero = votos, 
+             siglas_segundo, votos_segundo)
+    ```
+
 -   ¿A quién beneficia la baja participación?
 
 ```{r}

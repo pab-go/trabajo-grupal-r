@@ -33,6 +33,8 @@ execute:
 rm(list = ls())
 library(tidyverse)
 library(dplyr)
+library(glue)
+library(ggplot2)
 ```
 
 ------------------------------------------------------------------------
@@ -238,9 +240,6 @@ encuestas_filtradas <- surveys |>
 
 ```{r}
 
-library(dplyr)
-library(glue)
-
 # Transformar los datos y generar identificadores
 election_data <- election_data |> 
   mutate(
@@ -307,7 +306,7 @@ ggplot(corr_participacion, aes(x = reorder(siglas, correlacion), y = correlacion
 -   ¿Cómo analizar la relación entre censo y voto? ¿Es cierto que determinados partidos ganan en las zonas rurales?
 
 ```{r}
-library(ggplot2)
+
 
 election_data_rcs <- election_data |> 
     mutate("participacion" = 100*(votos_candidaturas + votos_blancos + votos_nulos) / censo) |> slice(1,.by = participacion)
@@ -338,19 +337,45 @@ ggplot(election_data_rcs, aes(x = censo, y = participacion)) +
 ```
 
 ```{r}
-##AHora lo haremos para las zonas rurales, es decir, con menos de 2500 habitantes
-ganadores2 <- election_data |> 
-  mutate(
-    id_mun = (glue("{codigo_ccaa}-{codigo_provincia}-{codigo_municipio}")),
-    fecha = (as_date(glue("{anno}-{mes}-01")))
-  ) |> 
-  filter(censo <= 2500) |> 
-  group_by(id_mun, fecha) |> 
-  slice_max(order_by = votos, n = 1) |>  # Máximo voto por grupo
-  ungroup() 
+library(dplyr)
+library(glue)
+library(lubridate)
 
- ggplot(ganadores2)+geom_bar(aes(x= siglas))
- 
+# Seleccionar el partido ganador por municipio y clasificar por zona
+election_data <- election_data |> 
+  mutate(
+    zona = if_else(censo <= 2500, "Rural", "Urbana")                      # Clasificación por zona
+  ) 
+
+votos_por_zona <- election_data |> summarise(votos=sum(votos), .by = c(zona,siglas))
+
+votos_por_zona2 <- votos_por_zona |> pivot_wider(names_from = zona, values_from = votos) |> mutate(rural=(Rural/sum(Rural))*100, urbana=(Urbana/sum(Urbana))*100, dif_perc=rural-urbana) 
+#TEst de wilcoxon-MAnWhitney
+wilcox.test(votos_por_zona2$rural, votos_por_zona2$urbana, paired = TRUE)
+
+
+#UN gráfico para verlo, aunque no hay muchas diferencias
+library(forcats)
+
+
+ggplot(votos_por_zona2) +
+  geom_col(aes(x = fct_reorder(siglas, dif_perc), y = dif_perc,fill=siglas)) +  # Colorear las barras
+  scale_y_continuous(limits = c(-50, 50)) +  # Escala en el eje y de -100 a 100
+  scale_fill_manual(values= c(CS = "orange", UP = "purple", VOX = "green",OTROS="grey",MP="#009975",BNG="#6AADE4",PNV="#086522","CONVERGÈNCIA I UNIÓ"="#FFDFC4",ERC="yellow",BILDU="#30D5C8",PSOE="red", PP="blue"))
+
+ggplot(votos_por_zona2) +
+  geom_boxplot(aes(y = dif_perc, fill = "blue")) +  # Una sola caja para toda la variable
+  scale_y_continuous(limits = c(-4, 4)) +  # Ajuste de los límites del eje Y
+  scale_fill_manual(values = c("blue")) +  # Un solo color para toda la caja
+  labs(title = "Distribución de Diferencia porcentual", y = "Diferencia porcentual") +
+  theme_minimal() +  # Estilo minimalista
+  theme(
+    axis.text.x = element_blank(),  # Eliminar el eje X
+    axis.ticks.x = element_blank(),  # Eliminar las marcas del eje X
+    axis.title.x = element_blank(),  # Eliminar el título del eje X
+    axis.line.x = element_blank()   # Eliminar la línea del eje X
+  )
+
 ```
 
 ------------------------------------------------------------------------

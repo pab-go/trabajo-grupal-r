@@ -35,6 +35,8 @@ library(tidyverse)
 library(dplyr)
 library(glue)
 library(ggplot2)
+library(lubridate)
+library(forcats)
 ```
 
 ------------------------------------------------------------------------
@@ -364,7 +366,6 @@ ggplot(election_data_rcs, aes(x = censo, y = participacion)) +
     subtitle = "Datos simulados de participación electoral",
     x = "Censo (número de votantes)",
     y = "Participación (%)",
-    caption = "Fuente: Datos simulados"
   ) +
   theme_minimal(base_size = 14) +  # Tema minimalista
   theme(
@@ -379,9 +380,6 @@ ggplot(election_data_rcs, aes(x = censo, y = participacion)) +
 ```
 
 ```{r}
-library(dplyr)
-library(glue)
-library(lubridate)
 
 # Seleccionar el partido ganador por municipio y clasificar por zona
 election_data <- election_data |> 
@@ -397,8 +395,6 @@ wilcox.test(votos_por_zona2$rural, votos_por_zona2$urbana, paired = TRUE)
 
 
 #UN gráfico para verlo, aunque no hay muchas diferencias
-library(forcats)
-
 
 ggplot(votos_por_zona2) +
   geom_col(aes(x = fct_reorder(siglas, dif_perc), y = dif_perc,fill=siglas)) +  # Colorear las barras

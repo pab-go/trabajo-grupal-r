@@ -1,0 +1,23 @@
+"0","##AHora lo haremos para las zonas rurales, es decir, con menos de 2500 habitantes"
+"0","ganadores2 <- election_data |> "
+"0","  mutate("
+"0","    id_mun = (glue(""{codigo_ccaa}-{codigo_provincia}-{codigo_municipio}"")),"
+"0","    fecha = (as_date(glue(""{anno}-{mes}-01"")))"
+"0","  ) |> "
+"0","  filter(censo <= 2500) |> "
+"0","  group_by(id_mun, fecha) |> "
+"0","  slice_max(order_by = votos, n = 1) |>  # Máximo voto por grupo"
+"0","  ungroup() "
+"1","[1m[33mError[39m in `mutate()`:[22m
+[38;5;255m[36mℹ[38;5;255m In argument: `id_mun = (glue(""{codigo_ccaa}-{codigo_provincia}-{codigo_municipio}""))`.[39m
+[1mCaused by error:[22m
+[33m![39m Failed to evaluate glue component {codigo_ccaa}
+[1mCaused by error:[22m
+[33m![39m object 'codigo_ccaa' not found
+Backtrace:
+[90m  1. [39m[1mdplyr[22m::ungroup(...)
+[90m 14. [39m[1mglue[22m (local) `<fn>`(""codigo_ccaa"")
+[90m 16. [39mglue (local) .transformer(expr, env)
+[90m 19. [39m[1mbase[22m::eval(expr, envir)
+[90m 20. [39mbase::eval(expr, envir)
+"

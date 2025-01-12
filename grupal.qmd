@@ -359,7 +359,39 @@ ganadores2 <- election_data |>
 
 -   ¿Cómo calibrar el error de las encuestas (recordemos que las encuestas son de intención de voto a nivel nacional)?
 
+    ```{r}
+    # Creamos una variable en election_data y en surveys que sea la fecha de las elecciones sin el día
+    election_data <- election_data |> 
+      mutate(fecha_año_mes = format(fecha, "%Y-%m"))
+
+    surveys <- surveys |> 
+      mutate(fecha_año_mes = format(date_elec, "%Y-%m"))
+
+    # Unir las tablas surveys y election_data por las columnas fecha_año_mes y partido/siglas
+    elecciones_encuestas <- surveys |> 
+      inner_join(election_data, by = c("fecha_año_mes" = "fecha_año_mes", "partido" = "siglas"))
+
+    # Calcular el error absoluto
+    elecciones_encuestas <- elecciones_encuestas |> 
+      mutate(error_absoluto = abs(votos - puntuacion))
+    ```
+
 -   ¿Qué casas encuestadoras acertaron más y cuáles se desviaron más de los resultados?
+
+```{r}
+# Agrupar por pollster y sumar el error absoluto
+pollster_error <- elecciones_encuestas |> 
+  group_by(id_pollster, pollster) |> 
+  summarize(total_error = sum(error_absoluto, na.rm = TRUE), .groups = "drop")
+
+# Encontrar el pollster con el menor error
+pollster_min_error <- pollster_error |> 
+  filter(total_error == min(total_error))
+
+# Encontrar el pollster con el mayor error
+pollster_max_error <- pollster_error |> 
+  filter(total_error == max(total_error))
+```
 
 Debes incluir [**al menos 3 preguntas "originales" más**]{.hl-orange} que consideres interesantes de responder utilizando los datos.
 
@@ -383,7 +415,6 @@ Recuerda que el objetivo real es demostrar un dominio de las herramientas vistas
 
 Deberéis tenerlo todo subido a Github con el enlace generado de manera correcta. Recuerda que el objetivo real es demostrar un dominio de las herramientas vistas a lo largo del curso. Y eso no se mide solo por la cantidad de herramientas utilizadas, sino también por la calidad en su ejecución.
 
-Deberéis tenerlo todo subido a Github con el enlace generado de manera correcta.
-Recuerda que el objetivo real es demostrar un dominio de las herramientas vistas a lo largo del curso. Y eso no se mide solo por la cantidad de herramientas utilizadas, sino también por la calidad en su ejecución.
+Deberéis tenerlo todo subido a Github con el enlace generado de manera correcta. Recuerda que el objetivo real es demostrar un dominio de las herramientas vistas a lo largo del curso. Y eso no se mide solo por la cantidad de herramientas utilizadas, sino también por la calidad en su ejecución.
 
 Deberéis tenerlo todo subido a Github con el enlace generado de manera correcta.

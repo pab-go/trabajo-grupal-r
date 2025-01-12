@@ -37,6 +37,7 @@ library(glue)
 library(ggplot2)
 library(lubridate)
 library(forcats)
+library(patchwork)
 ```
 
 ------------------------------------------------------------------------
@@ -396,23 +397,26 @@ wilcox.test(votos_por_zona2$rural, votos_por_zona2$urbana, paired = TRUE)
 
 #UN gráfico para verlo, aunque no hay muchas diferencias
 
-ggplot(votos_por_zona2) +
-  geom_col(aes(x = fct_reorder(siglas, dif_perc), y = dif_perc,fill=siglas)) +  # Colorear las barras
-  scale_y_continuous(limits = c(-50, 50)) +  # Escala en el eje y de -100 a 100
-  scale_fill_manual(values= c(CS = "orange", UP = "purple", VOX = "green",OTROS="grey",MP="#009975",BNG="#6AADE4",PNV="#086522","CONVERGÈNCIA I UNIÓ"="#FFDFC4",ERC="yellow",BILDU="#30D5C8",PSOE="red", PP="blue"))
+barras_rural <- ggplot(votos_por_zona2) +
+  geom_col(aes(x = fct_reorder(siglas, dif_perc), y= dif_perc,fill=siglas)) +  # Colorear las barras
+  scale_y_continuous(limits = c(-35, 35)) +  # Escala en el eje y de -100 a 100
+  scale_fill_manual(values= c(CS = "orange", UP = "purple", VOX = "green",OTROS="grey",MP="#009975",BNG="#6AADE4",PNV="#086522","CONVERGÈNCIA I UNIÓ"="#FFDFC4",ERC="yellow",BILDU="#30D5C8",PSOE="red", PP="blue"))+theme(legend.position = "bottom")+labs(x="partidos",y="diferencia")
 
-ggplot(votos_por_zona2) +
-  geom_boxplot(aes(y = dif_perc, fill = "blue")) +  # Una sola caja para toda la variable
+bigotes_rural <-ggplot(votos_por_zona2) +
+  geom_boxplot(aes(y = dif_perc, fill = "blue"), width = 0.5) +  # Una sola caja para toda la variable
   scale_y_continuous(limits = c(-4, 4)) +  # Ajuste de los límites del eje Y
   scale_fill_manual(values = c("blue")) +  # Un solo color para toda la caja
-  labs(title = "Distribución de Diferencia porcentual", y = "Diferencia porcentual") +
   theme_minimal() +  # Estilo minimalista
   theme(
     axis.text.x = element_blank(),  # Eliminar el eje X
     axis.ticks.x = element_blank(),  # Eliminar las marcas del eje X
     axis.title.x = element_blank(),  # Eliminar el título del eje X
-    axis.line.x = element_blank()   # Eliminar la línea del eje X
+    axis.line.x = element_blank(),
+    axis.title.y = element_blank(),
+    legend.position = "none"   # Eliminar la línea del eje X
   )
+ graficos_unids <- barras_rural+bigotes_rural+ 
+  plot_layout(ncol = 2, widths = c(2.75, 1.25))
 
 ```
 
@@ -432,7 +436,8 @@ ggplot(votos_por_zona2) +
 
     # Unir las tablas surveys y election_data por las columnas fecha_año_mes y partido/siglas
     elecciones_encuestas <- surveys |> 
-      inner_join(election_data, by = c("fecha_año_mes" = "fecha_año_mes", "partido" = "siglas"))
+      inner_join(election_data, by = c("fecha_año_mes" = "fecha_año_mes", "partido" = "siglas"),relationship =
+  "many-to-many") |> select(-c(participacion_1,participacion_2,votos_blancos,votos_nulos,numero_mesas,zona,size,turnout,partidos))
 
     # Calcular el error absoluto
     elecciones_encuestas <- elecciones_encuestas |> 
@@ -457,6 +462,76 @@ pollster_max_error <- pollster_error |>
 ```
 
 Debes incluir [**al menos 3 preguntas "originales" más**]{.hl-orange} que consideres interesantes de responder utilizando los datos.
+
+¿Hay medios que tienden a beneficiar más a un partido que a otro?
+
+```{r}
+
+elecciones_encuestas_filt2 <- elecciones_encuestas |> 
+  mutate(
+    field_date_to = as_date(field_date_to),  # Asegúrate de que las fechas estén en formato Date
+    date_elec = as_date(date_elec)
+  ) |> 
+  group_by(date_elec, media, partido) |>  # Agrupamos por elección, medio y partido
+  filter(field_date_to == max(field_date_to[field_date_to <= date_elec])) |>  # Filtrar la fecha más cercana anterior a la elección
+  ungroup()
+
+# Verificamos el resultado
+print(elecciones_encuestas_filt2)
+
+
+# Paso 1: Calcular los votos estimados y el error absoluto
+errores <- elecciones_encuestas_filt2 |> 
+  group_by(date_elec) |> # Agrupar por elección 
+  mutate(
+    total_votos_eleccion = sum(votos, na.rm = TRUE)    # Calcular total de votos por elección
+  ) |> 
+  ungroup() |> # Salir de la agrupación
+  mutate(
+    votos_estimados = puntuacion / 100 * votos_candidaturas,  # Calcular votos estimados
+    error = votos_estimados - votos ,                     # Calcular el error 
+    error_relativo = abs(error/votos_candidaturas)
+  )
+
+
+# Paso 2: Agrupar por medio y partido para calcular el error medio
+media_errores <- errores |> 
+  group_by(media, partido) |> 
+  summarise(
+    error_medio = mean(error, na.rm = TRUE),          # Promedio del error absoluto
+    error_mediano = median(error, na.rm = TRUE),      # Mediana del error absoluto
+    n_encuestas = n_distinct(date_elec),
+    relativo_medio = mean(error_relativo),  
+    .groups = "drop"
+  )
+
+# Ver resultados resumidos
+print(media_errores)
+
+# Paso 3: Visualización del error medio por medio y partido
+ggplot(media_errores, aes(x = partido, y = error_medio, fill = media)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(
+    title = "Error medio por medio y partido",
+    x = "Partido",
+    y = "Error medio (votos)"
+  ) +
+  theme_minimal()
+
+
+# Visualizar errores relativos (Opcional)
+ggplot(media_errores_relativos, aes(x = partido, y = error_relativo_medio, fill = media)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(
+    title = "Error relativo medio por medio y partido",
+    x = "Partido",
+    y = "Error relativo medio"
+  ) +
+  theme_minimal()
+
+
+```
+
 
 ------------------------------------------------------------------------
 

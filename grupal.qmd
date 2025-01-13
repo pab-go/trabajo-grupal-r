@@ -438,13 +438,13 @@ bigotes_rural <-ggplot(votos_por_zona2) +
     # Unir las tablas surveys y election_data por las columnas fecha_año_mes y partido/siglas
     elecciones_encuestas <- encuestas_filtradas |> 
       inner_join(election_data, by = c("fecha_año_mes" = "fecha_año_mes", "partido" = "siglas"),relationship =
-  "many-to-many") |> select(-c(participacion_1,participacion_2,numero_mesas,zona,size,turnout,partidos))
+      "many-to-many") |> select(-c(participacion_1,participacion_2,numero_mesas,zona,size,turnout,partidos))
 
     # Calcular el error absoluto
     elecciones_encuestas <- elecciones_encuestas |> 
       mutate(votos_estimados_censo = puntuacion / 100 * censo,
     error_censo = abs(votos_estimados_censo - votos)
-  )
+      )
     ```
 
 -   ¿Qué casas encuestadoras acertaron más y cuáles se desviaron más de los resultados?
@@ -535,6 +535,61 @@ ggplot(media_errores_relativos, aes(x = partido, y = error_relativo_medio, fill 
 
 ```
 
+¿Existen diferencias significativas en los patrones de votos nulos y blancos entre municipios urbanos y rurales?
+
+```{r}
+# Crear una clasificación de municipios: Urbano o Rural
+# Criterio: si el censo es mayor a 10,000, es Urbano; de lo contrario, es Rural
+datos <- election_data |> 
+  mutate(
+    tipo_municipio = ifelse(censo > 10000, "Urbano", "Rural"),
+    votos_totales = votos_blancos + votos_nulos + votos_candidaturas, # Calcular total de votos
+    proporción_nulos = (votos_nulos / votos_totales) * 100,          # Proporción de nulos
+    proporción_blancos = (votos_blancos / votos_totales) * 100       # Proporción de blancos
+  )
+
+# Resumen de proporciones por tipo de municipio
+resumen_tipo <- datos |> 
+  group_by(tipo_municipio) |> 
+  summarise(
+    media_nulos = mean(proporción_nulos, na.rm = TRUE),
+    media_blancos = mean(proporción_blancos, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+# Visualización de proporciones por tipo de municipio
+resumen_tipo |> 
+  pivot_longer(cols = starts_with("media"), names_to = "tipo_voto", values_to = "proporcion") |> 
+  ggplot(aes(x = tipo_municipio, y = proporcion, fill = tipo_voto)) +
+  geom_col(position = "dodge") +
+  scale_fill_manual(values = c("media_nulos" = "red", "media_blancos" = "blue"),
+                    labels = c("Votos Nulos", "Votos en Blanco")) +
+  labs(
+    title = "Proporciones de Votos Nulos y Blancos por Tipo de Municipio",
+    x = "Tipo de Municipio",
+    y = "Proporción (%)",
+    fill = "Tipo de Voto"
+  ) +
+  theme_minimal()
+
+# Comparación estadística: Test t para diferencias entre Urbano y Rural
+test_nulos <- t.test(proporción_nulos ~ tipo_municipio, data = datos)
+test_blancos <- t.test(proporción_blancos ~ tipo_municipio, data = datos)
+
+cat("Resultados del Test t para votos nulos:\n")
+print(test_nulos)
+
+cat("\nResultados del Test t para votos en blanco:\n")
+print(test_blancos)
+```
+
+-VOTOS NULOS:
+
+Existe una **diferencia significativa** entre las proporciones de votos nulos en municipios rurales y urbanos. La proporción de votos nulos en los municipios rurales (1.17%) es mayor que en los municipios urbanos (0.97%).
+
+-VOTOS BLANCOS:
+
+Existe una **diferencia significativa** entre las proporciones de votos en blanco en municipios rurales y urbanos. Aunque la diferencia es estadísticamente significativa, es **muy pequeña** en términos prácticos: la proporción media de votos en blanco en municipios rurales (0.99%) es ligeramente mayor que en municipios urbanos (0.98%).
 
 ------------------------------------------------------------------------
 

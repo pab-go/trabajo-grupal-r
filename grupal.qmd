@@ -415,7 +415,7 @@ bigotes_rural <-ggplot(votos_por_zona2) +
     axis.title.y = element_blank(),
     legend.position = "none"   # Eliminar la línea del eje X
   )
- graficos_unids <- barras_rural+bigotes_rural+ 
+ graficos_unidos <- barras_rural+bigotes_rural+ 
   plot_layout(ncol = 2, widths = c(2.75, 1.25))
 
 ```
@@ -429,19 +429,22 @@ bigotes_rural <-ggplot(votos_por_zona2) +
     ```{r}
     # Creamos una variable en election_data y en surveys que sea la fecha de las elecciones sin el día
     election_data <- election_data |> 
-      mutate(fecha_año_mes = format(fecha, "%Y-%m"))
+      mutate(fecha_año_mes = format(fecha, "%Y-%m"),
+             participacion = votos_candidaturas + votos_blancos + votos_nulos)
 
-    surveys <- surveys |> 
+    encuestas_filtradas <- encuestas_filtradas |> 
       mutate(fecha_año_mes = format(date_elec, "%Y-%m"))
 
     # Unir las tablas surveys y election_data por las columnas fecha_año_mes y partido/siglas
-    elecciones_encuestas <- surveys |> 
+    elecciones_encuestas <- encuestas_filtradas |> 
       inner_join(election_data, by = c("fecha_año_mes" = "fecha_año_mes", "partido" = "siglas"),relationship =
-  "many-to-many") |> select(-c(participacion_1,participacion_2,votos_blancos,votos_nulos,numero_mesas,zona,size,turnout,partidos))
+  "many-to-many") |> select(-c(participacion_1,participacion_2,numero_mesas,zona,size,turnout,partidos))
 
     # Calcular el error absoluto
     elecciones_encuestas <- elecciones_encuestas |> 
-      mutate(error_absoluto = abs(votos - puntuacion))
+      mutate(votos_estimados_censo = puntuacion / 100 * censo,
+    error_censo = abs(votos_estimados_censo - votos)
+  )
     ```
 
 -   ¿Qué casas encuestadoras acertaron más y cuáles se desviaron más de los resultados?
@@ -484,7 +487,7 @@ print(elecciones_encuestas_filt2)
 errores <- elecciones_encuestas_filt2 |> 
   group_by(date_elec) |> # Agrupar por elección 
   mutate(
-    total_votos_eleccion = sum(votos, na.rm = TRUE)    # Calcular total de votos por elección
+    total_votos_eleccion = sum(participacion, na.rm = TRUE)    # Calcular total de votos por elección
   ) |> 
   ungroup() |> # Salir de la agrupación
   mutate(

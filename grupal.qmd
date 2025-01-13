@@ -354,7 +354,8 @@ ggplot(corr_participacion, aes(x = reorder(siglas, correlacion), y = correlacion
 
 
 election_data_rcs <- election_data |> 
-    mutate("participacion" = 100*(votos_candidaturas + votos_blancos + votos_nulos) / censo) |> slice(1,.by = participacion)
+    mutate("participacion" = 100*(votos_candidaturas + votos_blancos + votos_nulos) / censo,) |> summarise(participacion=mean(participacion),
+          censo=mean(censo), .by = id_mun)
 
 
 ##GRAFICO RELACION CENSO Y VOTO
@@ -377,6 +378,55 @@ ggplot(election_data_rcs, aes(x = censo, y = participacion)) +
     legend.position = "top"  # Posición de la leyenda
   )
 
+
+
+
+# Crear grupos de censo con case_when
+datos_grupos <- election_data_rcs |> 
+  mutate(
+  grupo_censo = case_when(
+    censo <= 500 ~ "1: ≤500",                       # Primeros 3 rangos más pequeños
+    censo > 500 & censo <= 2500 ~ "2: 500-2.5",
+    censo > 2500 & censo <= 4000 ~ "3: 2.5k-4k",
+    censo > 4000 & censo <= 7500 ~ "4: 4k-7.5k",    # Intermedios más finos
+    censo > 7500 & censo <= 10000 ~ "5: 7.5k-10k",
+    censo > 10000 & censo <= 15000 ~ "6: 10k-15k",
+    censo > 15000 & censo <= 20000 ~ "7: 15k-20k",
+    censo > 20000 & censo <= 30000 ~ "8: 20k-30k",  # Más granularidad en intermedios
+    censo > 30000 & censo <= 50000 ~ "9: 30k-50k",
+    censo > 50000 & censo <= 75000 ~ "10: 50k-75k",
+    censo > 75000 & censo <= 100000 ~ "11: 75k-100k",
+    censo > 100000 & censo <= 150000 ~ "12: 100k-150k", # Rango más amplio en superiores
+    censo > 150000 & censo <= 250000 ~ "13: 150k-250k",
+    censo > 250000 & censo <= 500000 ~ "14: 250k-500k",
+    censo > 500000 ~ "15: >500k"
+  )
+)|> 
+  group_by(grupo_censo) |> 
+  summarise(
+    participacion_media = median(participacion, na.rm = TRUE), # Media de participación
+    participacion_sd = sd(participacion, na.rm = TRUE),     # Desviación estándar
+    censo_medio = median(censo, na.rm = TRUE),                # Tamaño medio del censo en cada grupo
+    n_municipios = n()                                      # Número de municipios en el grupo
+  )
+
+# Visualizar los grupos
+print(datos_grupos)
+
+# Crear una regresión lineal sobre los puntos calculados
+modelo <- lm(participacion_media ~ censo_medio, data = datos_grupos)
+summary(modelo)
+
+# Gráfico de la relación (simplificado con menos puntos)
+ggplot(datos_grupos, aes(x = censo_medio, y = participacion_media)) +
+  geom_point(aes(size = n_municipios), color = "steelblue") +  # Tamaño proporcional al número de municipios
+  geom_smooth(method = "lm", color = "red", se = TRUE) +       # Línea de regresión lineal
+  labs(
+    title = "Relación entre Censo Medio y Participación Media por Grupo",
+    x = "Censo Medio por Grupo",
+    y = "Participación Media (%)"
+  ) +
+  theme_minimal()
 
 ```
 
@@ -444,7 +494,7 @@ bigotes_rural <-ggplot(votos_por_zona2) +
     elecciones_encuestas <- elecciones_encuestas |> 
       mutate(votos_estimados_censo = puntuacion / 100 * censo,
     error_censo = abs(votos_estimados_censo - votos)
-      )
+      ) 
     ```
 
 -   ¿Qué casas encuestadoras acertaron más y cuáles se desviaron más de los resultados?

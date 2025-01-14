@@ -224,7 +224,7 @@ TRUE ~ "OTROS"))
 ```
 
 ```{r}
-encuestas_filtradas <- surveys |> 
+surveys <- surveys |> 
   filter(
     as.numeric(format(date_elec, "%Y")) >= 2008,  # Elecciones desde 2008 
     exit_poll == FALSE,                           # No sean a pie de urna
@@ -482,18 +482,17 @@ bigotes_rural <-ggplot(votos_por_zona2) +
       mutate(fecha_año_mes = format(fecha, "%Y-%m"),
              participacion = votos_candidaturas + votos_blancos + votos_nulos)
 
-    encuestas_filtradas <- encuestas_filtradas |> 
+    encuestas_filtradas <- surveys |> 
       mutate(fecha_año_mes = format(date_elec, "%Y-%m"))
 
     # Unir las tablas surveys y election_data por las columnas fecha_año_mes y partido/siglas
     elecciones_encuestas <- encuestas_filtradas |> 
-      inner_join(election_data, by = c("fecha_año_mes" = "fecha_año_mes", "partido" = "siglas"),relationship =
-      "many-to-many") |> select(-c(participacion_1,participacion_2,numero_mesas,zona,size,turnout,partidos))
+      inner_join(election_data, by = c("fecha_año_mes" = "fecha_año_mes", "partido" = "siglas")) |> select(-c(participacion_1,participacion_2,numero_mesas,zona,size,turnout,partidos))
 
     # Calcular el error absoluto
     elecciones_encuestas <- elecciones_encuestas |> 
       mutate(votos_estimados_censo = puntuacion / 100 * censo,
-    error_censo = abs(votos_estimados_censo - votos)
+    error_absoluto = abs(votos_estimados_censo - votos)
       ) 
     ```
 
@@ -501,9 +500,10 @@ bigotes_rural <-ggplot(votos_por_zona2) +
 
 ```{r}
 # Agrupar por pollster y sumar el error absoluto
+
 pollster_error <- elecciones_encuestas |> 
   group_by(id_pollster, pollster) |> 
-  summarize(total_error = sum(error_absoluto, na.rm = TRUE), .groups = "drop")
+  summarize(total_error = sum(error_absoluto, na.rm = TRUE), .groups = "drop") |> ungroup()
 
 # Encontrar el pollster con el menor error
 pollster_min_error <- pollster_error |> 
@@ -516,71 +516,116 @@ pollster_max_error <- pollster_error |>
 
 Debes incluir [**al menos 3 preguntas "originales" más**]{.hl-orange} que consideres interesantes de responder utilizando los datos.
 
-¿Hay medios que tienden a beneficiar más a un partido que a otro?
+¿Ha subido el peso de los grandes partidos, de los partidos nacionalistas y de los partidos nuevos a lo largo del tiempo?
 
 ```{r}
+ 
+library(ggplot2)
+library(ggtext) # Para usar `element_markdown`
+library(ggnewscale) # Para usar `new_scale_color`
 
-elecciones_encuestas_filt2 <- elecciones_encuestas |> 
+
+# Paso 1: Calcular el censo único por elección
+censo_por_eleccion <- election_data |> 
+  group_by(fecha, id_mun) |>  # Agrupar por elección y municipio
+  slice(1)|> 
+  ungroup() |> 
+  group_by(fecha) |>  # Agrupar nuevamente por elección
+  summarise(censo_total = sum(participacion, na.rm = TRUE), .groups = "drop")  # Sumar el censo por elección
+
+# Paso 2: Agrupar votos por grupo y calcular el porcentaje
+resultados_porcentajes <- election_data |> 
   mutate(
-    field_date_to = as_date(field_date_to),  # Asegúrate de que las fechas estén en formato Date
-    date_elec = as_date(date_elec)
+    Grupo = case_when(
+      str_detect(siglas, "PSOE|PP") ~ "PARTIDO TRADICIONAL",
+      str_detect(siglas, "CS|UP|MP|VOX|CONVERGÈNCIA I UNIÓ") ~ "PARTIDO NUEVO",
+      str_detect(siglas, "PNV|BNG|ERC|BILDU") ~ "NACIONALISTA/REGIONALISTA",
+      TRUE ~ "OTROS"
+    )
   ) |> 
-  group_by(date_elec, media, partido) |>  # Agrupamos por elección, medio y partido
-  filter(field_date_to == max(field_date_to[field_date_to <= date_elec])) |>  # Filtrar la fecha más cercana anterior a la elección
-  ungroup()
-
-# Verificamos el resultado
-print(elecciones_encuestas_filt2)
-
-
-# Paso 1: Calcular los votos estimados y el error absoluto
-errores <- elecciones_encuestas_filt2 |> 
-  group_by(date_elec) |> # Agrupar por elección 
-  mutate(
-    total_votos_eleccion = sum(participacion, na.rm = TRUE)    # Calcular total de votos por elección
-  ) |> 
-  ungroup() |> # Salir de la agrupación
-  mutate(
-    votos_estimados = puntuacion / 100 * votos_candidaturas,  # Calcular votos estimados
-    error = votos_estimados - votos ,                     # Calcular el error 
-    error_relativo = abs(error/votos_candidaturas)
-  )
-
-
-# Paso 2: Agrupar por medio y partido para calcular el error medio
-media_errores <- errores |> 
-  group_by(media, partido) |> 
+  group_by(fecha, Grupo) |> 
   summarise(
-    error_medio = mean(error, na.rm = TRUE),          # Promedio del error absoluto
-    error_mediano = median(error, na.rm = TRUE),      # Mediana del error absoluto
-    n_encuestas = n_distinct(date_elec),
-    relativo_medio = mean(error_relativo),  
+    n_votos = sum(votos, na.rm = TRUE),   # Total de votos del grupo por elección
     .groups = "drop"
+  ) |> 
+  left_join(censo_por_eleccion, by = "fecha") |>  # Añadir el censo total por elección
+  mutate(
+    porcentaje = (n_votos / censo_total) * 100  # Calcular porcentaje sobre el censo total
   )
 
-# Ver resultados resumidos
-print(media_errores)
+BROWN <- "#AD8C97"
+BROWN_DARKER <- "#7d3a46"
+GREEN <- "#2FC1D3"
+BLUE <- "#076FA1"
+GREY <- "#C7C9CB"
+GREY_DARKER <- "#5C5B5D"
+RED <- "#E3120B"
 
-# Paso 3: Visualización del error medio por medio y partido
-ggplot(media_errores, aes(x = partido, y = error_medio, fill = media)) +
-  geom_bar(stat = "identity", position = "dodge") +
-  labs(
-    title = "Error medio por medio y partido",
-    x = "Partido",
-    y = "Error medio (votos)"
+plt1 <- ggplot(resultados_porcentajes, aes(fecha, porcentaje)) +
+  geom_line(aes(color = fct_reorder(Grupo,porcentaje)), size = 2.4) +
+  geom_point(
+    aes(fill = Grupo), 
+    size = 5, 
+    pch = 21, # Type of point that allows us to have both color (border) and fill.
+    color = "white", 
+    stroke = 1 # The width of the border, i.e. stroke.
   ) +
-  theme_minimal()
-
-
-# Visualizar errores relativos (Opcional)
-ggplot(media_errores_relativos, aes(x = partido, y = error_relativo_medio, fill = media)) +
-  geom_bar(stat = "identity", position = "dodge") +
-  labs(
-    title = "Error relativo medio por medio y partido",
-    x = "Partido",
-    y = "Error relativo medio"
+ scale_color_manual(values = c(BLUE, GREEN, BROWN,GREY)) +
+  scale_fill_manual(values = c(BLUE, GREEN, BROWN,GREY)) + 
+  theme(legend.position = "none")+
+  scale_x_date(
+    breaks = unique(resultados_porcentajes$fecha),   # Usar solo las fechas específicas
+    date_labels = "%Y"           # Mostrar solo el año en las etiquetas
   ) +
-  theme_minimal()
+  scale_y_continuous(
+    breaks = seq(0, 100, by = 5),  # Intervalos de 5 unidades en el eje Y
+    limits = c(0, 100)  )+
+  theme(
+    # Set background color to white
+    panel.background = element_rect(fill = "white"),
+    # Remove all grid lines
+    panel.grid = element_blank(),
+    # But add grid lines for the vertical axis, customizing color and size 
+    panel.grid.major.y = element_line(color = "#A8BAC4", size = 0.3),
+    # Remove tick marks on the vertical axis by setting their length to 0
+    axis.ticks.length.y = unit(0, "mm"), 
+    # But keep tick marks on horizontal axis
+    axis.ticks.length.x = unit(2, "mm"),
+    # Remove the title for both axes
+    axis.title = element_blank(),
+    # Only the bottom line of the vertical axis is painted in black
+    axis.line.x.bottom = element_line(color = "black"),
+    # Remove labels from the vertical axis
+    axis.text.y = element_blank(),
+    # But customize labels for the horizontal axis
+    axis.text.x = element_text(family = "Econ Sans Cnd", size = 16)
+  )+
+  theme_minimal() +
+  theme(
+    axis.title = element_text(size = 14, face = "bold"), # Estilo de títulos de los ejes
+    axis.text = element_text(size = 12)                 # Estilo de texto de las marcas de los ejes
+  ) +
+  labs(
+    title = "Evolución del porcentaje de votos por grupo",
+    x = "Fecha de la elección",
+    y = "Porcentaje de votos (%)"
+  )
+
+# Añadir título estilizado
+plt1 <- plt1 +
+  labs(
+    title = "**Evolución de grupos políticos:** % de votos"
+  ) + 
+  theme(
+    plot.title = element_markdown(
+      family = "Econ Sans Cnd", 
+      size = 18
+    )
+  )
+
+# Mostrar el gráfico
+plt1
+
 
 
 ```

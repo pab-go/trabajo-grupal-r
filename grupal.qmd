@@ -450,12 +450,15 @@ wilcox.test(votos_por_zona2$rural, votos_por_zona2$urbana, paired = TRUE)
 barras_rural <- ggplot(votos_por_zona2) +
   geom_col(aes(x = fct_reorder(siglas, dif_perc), y= dif_perc,fill=siglas)) +  # Colorear las barras
   scale_y_continuous(limits = c(-35, 35)) +  # Escala en el eje y de -100 a 100
-  scale_fill_manual(values= c(CS = "orange", UP = "purple", VOX = "green",OTROS="grey",MP="#009975",BNG="#6AADE4",PNV="#086522","CONVERGÈNCIA I UNIÓ"="#FFDFC4",ERC="yellow",BILDU="#30D5C8",PSOE="red", PP="blue"))+theme(legend.position = "bottom")+labs(x="partidos",y="diferencia")
+  scale_fill_manual(values= c(CS = "orange", UP = "purple", VOX = "green",OTROS="grey",MP="#009975",BNG="#6AADE4",PNV="#086522","CONVERGÈNCIA I UNIÓ"="#FFDFC4",ERC="yellow",BILDU="#30D5C8",PSOE="red", PP="blue"))+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        axis.title.x = element_blank(),
+        legend.position = "bottom")+
+  labs(x="partidos",y="diferencia")
 
 bigotes_rural <-ggplot(votos_por_zona2) +
-  geom_boxplot(aes(y = dif_perc, fill = "blue"), width = 0.5) +  # Una sola caja para toda la variable
+  geom_boxplot(aes(y = dif_perc, fill = "#CDAA7D"), width = 0.5) +  # Una sola caja para toda la variable
   scale_y_continuous(limits = c(-4, 4)) +  # Ajuste de los límites del eje Y
-  scale_fill_manual(values = c("blue")) +  # Un solo color para toda la caja
   theme_minimal() +  # Estilo minimalista
   theme(
     axis.text.x = element_blank(),  # Eliminar el eje X
@@ -465,7 +468,7 @@ bigotes_rural <-ggplot(votos_por_zona2) +
     axis.title.y = element_blank(),
     legend.position = "none"   # Eliminar la línea del eje X
   )
- graficos_unidos <- barras_rural+bigotes_rural+ 
+ barras_rural+bigotes_rural+ 
   plot_layout(ncol = 2, widths = c(2.75, 1.25))
 
 ```
@@ -562,7 +565,7 @@ GREY_DARKER <- "#5C5B5D"
 RED <- "#E3120B"
 
 plt1 <- ggplot(resultados_porcentajes, aes(fecha, porcentaje)) +
-  geom_line(aes(color = Grupo, size = 2)) +
+  geom_line(aes(color = Grupo,size= 1.5)) +
   geom_point(
     aes(fill = Grupo), 
     size = 5, 
@@ -603,8 +606,9 @@ plt1 <- ggplot(resultados_porcentajes, aes(fecha, porcentaje)) +
   theme_minimal() +
   theme(
     axis.title = element_text(size = 11, face = "bold"), # Estilo de títulos de los ejes
-    axis.text = element_text(size = 9)                 # Estilo de texto de las marcas de los ejes
-  ) +
+    axis.text = element_text(size = 12)
+  ) + 
+    guides(size = "none")+
   labs(
     title = "Evolución del porcentaje de votos por grupo",
     x = "Fecha de la elección",
@@ -614,12 +618,13 @@ plt1 <- ggplot(resultados_porcentajes, aes(fecha, porcentaje)) +
 # Añadir título estilizado
 plt1 <- plt1 +
   labs(
-    title = "**Evolución de grupos políticos:** % de votos"
+    title = "Evolución de grupos políticos: % de votos"
   ) + 
   theme(
+    margin = margin(20, 20, 20, 0),
     plot.title = element_markdown(
       family = "Econ Sans Cnd", 
-      size = 15
+      size = 20
     )
   )
 

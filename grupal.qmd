@@ -482,21 +482,30 @@ bigotes_rural <-ggplot(votos_por_zona2) +
     ```{r}
     # Creamos una variable en election_data y en surveys que sea la fecha de las elecciones sin el día
     election_data <- election_data |> 
-      mutate(fecha_año_mes = format(fecha, "%Y-%m"),
-             participacion = votos_candidaturas + votos_blancos + votos_nulos)
+      mutate(fecha_año_mes = format(fecha, "%Y-%m"))
 
-    encuestas_filtradas <- surveys |> 
+    surveys <- surveys |> 
       mutate(fecha_año_mes = format(date_elec, "%Y-%m"))
 
+    # Calcular el total de votos por partido y el total de votantes por fecha
+    resultados_votos <- election_data |> 
+      group_by(fecha_año_mes) |> 
+      mutate(total_votantes = sum(votos, na.rm = TRUE)) |>   # Calcular total de votantes por fecha
+      ungroup() %>%
+      group_by(fecha_año_mes, siglas) |> 
+      summarize(
+        total_votos = sum(votos, na.rm = TRUE),  # Total de votos por partido
+        total_votantes = first(total_votantes),  # Total de votantes por fecha
+        .groups = "drop"
+      )
+
     # Unir las tablas surveys y election_data por las columnas fecha_año_mes y partido/siglas
-    elecciones_encuestas <- encuestas_filtradas |> 
-      inner_join(election_data, by = c("fecha_año_mes" = "fecha_año_mes", "partido" = "siglas")) |> select(-c(participacion_1,participacion_2,numero_mesas,zona,size,turnout,partidos))
+    elecciones_encuestas <- surveys |> 
+      inner_join(resultados_votos, by = c("fecha_año_mes" = "fecha_año_mes", "partido" = "siglas"))
 
     # Calcular el error absoluto
     elecciones_encuestas <- elecciones_encuestas |> 
-      mutate(votos_estimados_censo = puntuacion / 100 * censo,
-    error_absoluto = abs(votos_estimados_censo - votos)
-      ) 
+      mutate(error_absoluto = abs(total_votos - puntuacion * total_votantes / 100))
     ```
 
 -   ¿Qué casas encuestadoras acertaron más y cuáles se desviaron más de los resultados?
@@ -635,7 +644,6 @@ plt1
 
 ```
 
-
 ¿Y los bloques?
 
 ```{r}
@@ -756,7 +764,6 @@ combined_plot <- (plt1 + plt2) +
   )
 combined_plot
 ```
-
 
 ¿Existen diferencias significativas en los patrones de votos nulos y blancos entre municipios urbanos y rurales?
 

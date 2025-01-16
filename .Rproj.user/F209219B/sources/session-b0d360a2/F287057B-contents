@@ -47,6 +47,9 @@ library(camcorder)
 library(showtext)
 
 <<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
+<<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
+>>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
+========
 >>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
 ========
 >>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
@@ -492,6 +495,9 @@ bigotes_rural <-ggplot(votos_por_zona2) +
   geom_boxplot(aes(y = dif_perc, fill = "#CDAA7D"), width = 0.4) +  # Una sola caja para toda la variable
   scale_y_continuous(limits = c(-4, 4)) +  # Ajuste de los límites del eje Y
 <<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
+<<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
+>>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
+========
 >>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
 ========
 >>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
@@ -553,7 +559,11 @@ nO obstante, eso no significa que haya individuos específicos que se salgan del
     elecciones_encuestas <- surveys |> 
 <<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
 <<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
+<<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
       inner_join(election_data, by = c("fecha_año_mes" = "fecha_año_mes", "partido" = "siglas"))
+========
+      inner_join(resultados_votos, by = c("fecha_año_mes" = "fecha_año_mes", "partido" = "siglas"))
+>>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
 ========
       inner_join(resultados_votos, by = c("fecha_año_mes" = "fecha_año_mes", "partido" = "siglas"))
 >>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
@@ -591,7 +601,10 @@ Debes incluir [**al menos 3 preguntas "originales" más**]{.hl-orange} que consi
 
 <<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
 <<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
+<<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
 ========
+========
+>>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
 ========
 >>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
 ¿Ha subido el peso de los grandes partidos, de los partidos nacionalistas y de los partidos nuevos a lo largo del tiempo?
@@ -842,6 +855,9 @@ Existe una **diferencia significativa** entre las proporciones de votos nulos en
 Existe una **diferencia significativa** entre las proporciones de votos en blanco en municipios rurales y urbanos. Aunque la diferencia es estadísticamente significativa, es **muy pequeña** en términos prácticos: la proporción media de votos en blanco en municipios rurales (0.99%) es ligeramente mayor que en municipios urbanos (0.98%).
 
 <<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
+<<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
+>>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
+========
 >>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
 ========
 >>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents

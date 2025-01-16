@@ -38,6 +38,11 @@ library(ggplot2)
 library(lubridate)
 library(forcats)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
+========
+>>>>>>> Stashed changes
 =======
 <<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
 ========
@@ -50,7 +55,14 @@ library(camcorder)
 library(showtext)
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+>>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
+>>>>>>> Stashed changes
+=======
+<<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
+>>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
+========
 >>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
 >>>>>>> Stashed changes
 ```
@@ -470,7 +482,10 @@ wilcox.test(votos_por_zona2$rural, votos_por_zona2$urbana, paired = TRUE)
 #UN gráfico para verlo, aunque no hay muchas diferencias
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
 ggplot(votos_por_zona2) +
   geom_col(aes(x = fct_reorder(siglas, dif_perc), y = dif_perc,fill=siglas)) +  # Colorear las barras
@@ -484,6 +499,9 @@ ggplot(votos_por_zona2) +
   labs(title = "Distribución de Diferencia porcentual", y = "Diferencia porcentual") +
   theme_minimal() +  # Estilo minimalista
 ========
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 barras_rural <- ggplot(votos_por_zona2) +
   geom_col(aes(x = fct_reorder(siglas, dif_perc), y= dif_perc,fill=siglas)) +  # Colorear las barras
@@ -498,7 +516,14 @@ bigotes_rural <-ggplot(votos_por_zona2) +
   geom_boxplot(aes(y = dif_perc, fill = "#CDAA7D"), width = 0.4) +  # Una sola caja para toda la variable
   scale_y_continuous(limits = c(-4, 4)) +  # Ajuste de los límites del eje Y
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+>>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
+>>>>>>> Stashed changes
+=======
+<<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
+>>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
+========
 >>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
 >>>>>>> Stashed changes
   theme(
@@ -506,11 +531,17 @@ bigotes_rural <-ggplot(votos_por_zona2) +
     axis.ticks.x = element_blank(),  # Eliminar las marcas del eje X
     axis.title.x = element_blank(),  # Eliminar el título del eje X
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 <<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
     axis.line.x = element_blank()   # Eliminar la línea del eje X
   )
 ========
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     axis.line.x = element_blank(),
     axis.title.y = element_blank(),
@@ -526,6 +557,10 @@ bigotes_rural <-ggplot(votos_por_zona2) +
  barras_rural+bigotes_rural+ 
   plot_layout(ncol = 2, widths = c(2.75, 1.25))
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
+>>>>>>> Stashed changes
 =======
 >>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
 >>>>>>> Stashed changes
@@ -545,6 +580,7 @@ nO obstante, eso no significa que haya individuos específicos que se salgan del
     # Creamos una variable en election_data y en surveys que sea la fecha de las elecciones sin el día
     election_data <- election_data |> 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       mutate(fecha_año_mes = format(fecha, "%Y-%m"),
              participacion = votos_candidaturas + votos_blancos + votos_nulos)
 
@@ -554,11 +590,16 @@ nO obstante, eso no significa que haya individuos específicos que se salgan del
 <<<<<<< Updated upstream
 =======
 =======
+=======
+>>>>>>> Stashed changes
       mutate(fecha_año_mes = format(fecha, "%Y-%m"))
 
     surveys <- surveys |> 
       mutate(fecha_año_mes = format(date_elec, "%Y-%m"))
 
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     # Calcular el total de votos por partido y el total de votantes por fecha
     resultados_votos <- election_data |> 
@@ -572,6 +613,7 @@ nO obstante, eso no significa que haya individuos específicos que se salgan del
         .groups = "drop"
       )
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 >>>>>>> Stashed changes
     # Unir las tablas surveys y election_data por las columnas fecha_año_mes y partido/siglas
@@ -587,14 +629,29 @@ nO obstante, eso no significa que haya individuos específicos que se salgan del
     # Unir las tablas surveys y election_data por las columnas fecha_año_mes y partido/siglas
     elecciones_encuestas <- surveys |> 
 <<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
+=======
+    # Unir las tablas surveys y election_data por las columnas fecha_año_mes y partido/siglas
+    elecciones_encuestas <- surveys |> 
+<<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
+<<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
+>>>>>>> Stashed changes
       inner_join(election_data, by = c("fecha_año_mes" = "fecha_año_mes", "partido" = "siglas"))
 ========
       inner_join(resultados_votos, by = c("fecha_año_mes" = "fecha_año_mes", "partido" = "siglas"))
 >>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
+<<<<<<< Updated upstream
+=======
+========
+      inner_join(resultados_votos, by = c("fecha_año_mes" = "fecha_año_mes", "partido" = "siglas"))
+>>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
+>>>>>>> Stashed changes
 
     # Calcular el error absoluto
     elecciones_encuestas <- elecciones_encuestas |> 
       mutate(error_absoluto = abs(total_votos - puntuacion * total_votantes / 100))
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     ```
 
@@ -622,9 +679,17 @@ pollster_max_error <- pollster_error |>
 Debes incluir [**al menos 3 preguntas "originales" más**]{.hl-orange} que consideres interesantes de responder utilizando los datos.
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
 ========
+>>>>>>> Stashed changes
+=======
+<<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
+<<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
+========
+========
+>>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
 >>>>>>> Stashed changes
 ¿Ha subido el peso de los grandes partidos, de los partidos nacionalistas y de los partidos nuevos a lo largo del tiempo?
 
@@ -736,8 +801,11 @@ plt1
 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
 ¿Y los bloques?
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -789,7 +857,10 @@ resultados_porcentajes2 <- resultados_porcentajes2 |>
 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 
@@ -831,6 +902,9 @@ ggplot(resultados_porcentajes2, aes(fill = Grupo, values = porcentaje))+
 ---
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -891,7 +965,14 @@ Existe una **diferencia significativa** entre las proporciones de votos nulos en
 Existe una **diferencia significativa** entre las proporciones de votos en blanco en municipios rurales y urbanos. Aunque la diferencia es estadísticamente significativa, es **muy pequeña** en términos prácticos: la proporción media de votos en blanco en municipios rurales (0.99%) es ligeramente mayor que en municipios urbanos (0.98%).
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+>>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
+>>>>>>> Stashed changes
+=======
+<<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
+>>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
+========
 >>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
 >>>>>>> Stashed changes
 ------------------------------------------------------------------------

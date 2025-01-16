@@ -43,6 +43,7 @@ library(forcats)
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
 ========
@@ -66,6 +67,8 @@ library(forcats)
 =======
 <<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
 ========
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 library(patchwork)
 library(ggtext) 
@@ -80,6 +83,7 @@ library(showtext)
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
 >>>>>>> Stashed changes
@@ -136,6 +140,8 @@ library(showtext)
 >>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
 ========
 >>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 ```
 
@@ -559,6 +565,7 @@ wilcox.test(votos_por_zona2$rural, votos_por_zona2$urbana, paired = TRUE)
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 =======
 >>>>>>> Stashed changes
@@ -599,6 +606,8 @@ ggplot(votos_por_zona2) +
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 barras_rural <- ggplot(votos_por_zona2) +
   geom_col(aes(x = fct_reorder(siglas, dif_perc), y= dif_perc,fill=siglas)) +  # Colorear las barras
   scale_y_continuous(limits = c(-35, 35)) +  # Escala en el eje y de -100 a 100
@@ -617,6 +626,7 @@ bigotes_rural <-ggplot(votos_por_zona2) +
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
 >>>>>>> Stashed changes
@@ -673,11 +683,14 @@ bigotes_rural <-ggplot(votos_por_zona2) +
 >>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
 ========
 >>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
   theme(
     axis.text.x = element_blank(),  # Eliminar el eje X
     axis.ticks.x = element_blank(),  # Eliminar las marcas del eje X
     axis.title.x = element_blank(),  # Eliminar el título del eje X
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -715,6 +728,8 @@ bigotes_rural <-ggplot(votos_por_zona2) +
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     axis.line.x = element_blank(),
     axis.title.y = element_blank(),
     legend.position = "none",
@@ -734,6 +749,7 @@ bigotes_rural <-ggplot(votos_por_zona2) +
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
 >>>>>>> Stashed changes
@@ -751,6 +767,8 @@ bigotes_rural <-ggplot(votos_por_zona2) +
 >>>>>>> Stashed changes
 =======
 >>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 ```
@@ -767,6 +785,7 @@ nO obstante, eso no significa que haya individuos específicos que se salgan del
     ```{r}
     # Creamos una variable en election_data y en surveys que sea la fecha de las elecciones sin el día
     election_data <- election_data |> 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -792,6 +811,8 @@ nO obstante, eso no significa que haya individuos específicos que se salgan del
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
       mutate(fecha_año_mes = format(fecha, "%Y-%m"))
 
     surveys <- surveys |> 
@@ -802,6 +823,9 @@ nO obstante, eso no significa que haya individuos específicos que se salgan del
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -825,6 +849,7 @@ nO obstante, eso no significa que haya individuos específicos que se salgan del
         .groups = "drop"
       )
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -933,6 +958,11 @@ nO obstante, eso no significa que haya individuos específicos que se salgan del
       inner_join(resultados_votos, by = c("fecha_año_mes" = "fecha_año_mes", "partido" = "siglas"))
 >>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
 >>>>>>> Stashed changes
+=======
+    # Unir las tablas surveys y election_data por las columnas fecha_año_mes y partido/siglas
+    elecciones_encuestas <- surveys |> 
+      inner_join(resultados_votos, by = c("fecha_año_mes" = "fecha_año_mes", "partido" = "siglas"))
+>>>>>>> Stashed changes
 
     # Calcular el error absoluto
     elecciones_encuestas <- elecciones_encuestas |> 
@@ -942,6 +972,9 @@ nO obstante, eso no significa que haya individuos específicos que se salgan del
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -984,6 +1017,7 @@ Debes incluir [**al menos 3 preguntas "originales" más**]{.hl-orange} que consi
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
 ========
@@ -1042,6 +1076,8 @@ Debes incluir [**al menos 3 preguntas "originales" más**]{.hl-orange} que consi
 >>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
 ========
 >>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 ¿Ha subido el peso de los grandes partidos, de los partidos nacionalistas y de los partidos nuevos a lo largo del tiempo?
 
@@ -1158,8 +1194,11 @@ plt1
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
 ¿Y los bloques?
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -1226,7 +1265,10 @@ resultados_porcentajes2 <- resultados_porcentajes2 |>
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -1283,6 +1325,9 @@ ggplot(resultados_porcentajes2, aes(fill = Grupo, values = porcentaje))+
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1358,6 +1403,7 @@ Existe una **diferencia significativa** entre las proporciones de votos en blanc
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
 >>>>>>> Stashed changes
@@ -1414,6 +1460,8 @@ Existe una **diferencia significativa** entre las proporciones de votos en blanc
 >>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
 ========
 >>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 ------------------------------------------------------------------------
 

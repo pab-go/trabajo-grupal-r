@@ -48,6 +48,7 @@
 "0","barras_rural <- ggplot(votos_por_zona2) +"
 "0","  geom_col(aes(x = fct_reorder(siglas, dif_perc), y= dif_perc,fill=siglas)) +  # Colorear las barras"
 "0","  scale_y_continuous(limits = c(-35, 35)) +  # Escala en el eje y de -100 a 100"
+<<<<<<< Updated upstream
 <<<<<<<< Updated upstream:.Rproj.user/shared/notebooks/0B729324-grupal/1/s/cusj302ifzd0i/00002c.csv
 "0","  scale_fill_manual(values= c(CS = ""orange"", UP = ""purple"", VOX = ""green"",OTROS=""grey"",MP=""#009975"",BNG=""#6AADE4"",PNV=""#086522"",""CONVERGÈNCIA I UNIÓ""=""#FFDFC4"",ERC=""yellow"",BILDU=""#30D5C8"",PSOE=""red"", PP=""blue""))+theme(legend.position = ""bottom"")+labs(x=""partidos"",y=""diferencia"")"
 "0",""
@@ -57,6 +58,8 @@
 "0","  scale_fill_manual(values = c(""blue"")) +  # Un solo color para toda la caja"
 "0","  theme_minimal() +  # Estilo minimalista"
 ========
+=======
+>>>>>>> Stashed changes
 "0","  scale_fill_manual(values= c(CS = ""orange"", UP = ""purple"", VOX = ""green"",OTROS=""grey"",MP=""#009975"",BNG=""#6AADE4"",PNV=""#086522"",""CONVERGÈNCIA I UNIÓ""=""#FFDFC4"",ERC=""yellow"",BILDU=""#30D5C8"",PSOE=""red"", PP=""blue""))+"
 "0","  theme(axis.text.x = element_text(angle = 45, hjust = 1),"
 "0","        axis.title.x = element_blank(),"
@@ -72,6 +75,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>>> Stashed changes:.Rproj.user/shared/notebooks/0B729324-grupal/1/s/cebl2zbj0w2rl/000021.csv
 =======
 >>>>>>> Stashed changes
@@ -128,6 +132,8 @@
 >>>>>>>> Stashed changes:.Rproj.user/shared/notebooks/0B729324-grupal/1/s/cebl2zbj0w2rl/000021.csv
 ========
 >>>>>>>> Stashed changes:.Rproj.user/shared/notebooks/0B729324-grupal/1/s/cebl2zbj0w2rl/000021.csv
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 "0","  theme("
 "0","    axis.text.x = element_blank(),  # Eliminar el eje X"
@@ -145,5 +151,9 @@
 "0","  )"
 "0","  )"
 "0"," barras_rural+bigotes_rural+ "
+<<<<<<< Updated upstream
 "0","  plot_layout(ncol = 2, widths = c(2.75, 1.25))+labs(title = ""Gráficos de la diferencia de porcentajes por partido y valores anómalos de entre ellos"")"
+=======
+"0","  plot_layout(ncol = 2, widths = c(2.75, 1.25))"
+>>>>>>> Stashed changes
 "0",""

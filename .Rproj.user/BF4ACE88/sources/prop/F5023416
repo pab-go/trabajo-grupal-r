@@ -1,8 +1,13 @@
 {
     "source_window_id": "",
     "Source": "Source",
+<<<<<<< Updated upstream
     "cursorPosition": "738,4",
     "scrollLine": "207",
+=======
+    "cursorPosition": "738,75",
+    "scrollLine": "731",
+>>>>>>> Stashed changes
     "rmdVisualMode": "false",
     "rmdVisualCollapsedChunks": "",
     "rmdVisualModeLocation": "3418:2781.818115234375",

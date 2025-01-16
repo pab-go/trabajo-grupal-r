@@ -3,7 +3,11 @@
     "path": "~/GitHub/trabajo-grupal-r/grupal.qmd",
     "project_path": "grupal.qmd",
     "type": "quarto_markdown",
+<<<<<<< Updated upstream
     "hash": "3209634704",
+=======
+    "hash": "2775765811",
+>>>>>>> Stashed changes
     "contents": "",
     "dirty": false,
     "created": 1735902757374.0,
@@ -12,8 +16,13 @@
     "properties": {
         "source_window_id": "",
         "Source": "Source",
+<<<<<<< Updated upstream
         "cursorPosition": "738,4",
         "scrollLine": "207",
+=======
+        "cursorPosition": "738,75",
+        "scrollLine": "731",
+>>>>>>> Stashed changes
         "rmdVisualMode": "false",
         "rmdVisualCollapsedChunks": "",
         "rmdVisualModeLocation": "3418:2781.818115234375",
@@ -21,11 +30,19 @@
         "docOutlineVisible": "1"
     },
     "folds": "",
+<<<<<<< Updated upstream
     "lastKnownWriteTime": 1737054844,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
     "last_content_update": 1737054846100,
+=======
+    "lastKnownWriteTime": 1737054816,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1737054816226,
+>>>>>>> Stashed changes
     "read_only": false,
     "read_only_alternatives": []
 }

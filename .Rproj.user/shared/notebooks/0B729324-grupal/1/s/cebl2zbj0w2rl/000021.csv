@@ -66,7 +66,10 @@
 "0","bigotes_rural <-ggplot(votos_por_zona2) +"
 "0","  geom_boxplot(aes(y = dif_perc, fill = ""#CDAA7D""), width = 0.4) +  # Una sola caja para toda la variable"
 "0","  scale_y_continuous(limits = c(-4, 4)) +  # Ajuste de los límites del eje Y"
+<<<<<<< Updated upstream
 >>>>>>>> Stashed changes:.Rproj.user/shared/notebooks/0B729324-grupal/1/s/cebl2zbj0w2rl/000021.csv
+=======
+>>>>>>> Stashed changes
 "0","  theme("
 "0","    axis.text.x = element_blank(),  # Eliminar el eje X"
 "0","    axis.ticks.x = element_blank(),  # Eliminar las marcas del eje X"

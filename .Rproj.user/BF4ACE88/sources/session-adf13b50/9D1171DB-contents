@@ -40,6 +40,11 @@ library(forcats)
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+<<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
+========
+>>>>>>> Stashed changes
 =======
 <<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
 ========
@@ -62,11 +67,16 @@ library(showtext)
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
 >>>>>>> Stashed changes
 =======
 =======
+<<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
+>>>>>>> Stashed changes
+=======
+<<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
 <<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
 >>>>>>> Stashed changes
 <<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
@@ -74,8 +84,15 @@ library(showtext)
 ========
 >>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
+========
+>>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
+>>>>>>> Stashed changes
+=======
+========
+>>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
 ========
 >>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
 >>>>>>> Stashed changes
@@ -498,7 +515,10 @@ wilcox.test(votos_por_zona2$rural, votos_por_zona2$urbana, paired = TRUE)
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -518,6 +538,9 @@ ggplot(votos_por_zona2) +
 ========
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -538,11 +561,16 @@ bigotes_rural <-ggplot(votos_por_zona2) +
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
 >>>>>>> Stashed changes
 =======
 =======
+<<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
+>>>>>>> Stashed changes
+=======
+<<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
 <<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
 >>>>>>> Stashed changes
 <<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
@@ -550,8 +578,15 @@ bigotes_rural <-ggplot(votos_por_zona2) +
 ========
 >>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
+========
+>>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
+>>>>>>> Stashed changes
+=======
+========
+>>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
 ========
 >>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
 >>>>>>> Stashed changes
@@ -562,7 +597,10 @@ bigotes_rural <-ggplot(votos_por_zona2) +
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -573,6 +611,9 @@ bigotes_rural <-ggplot(votos_por_zona2) +
 ========
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -594,6 +635,10 @@ bigotes_rural <-ggplot(votos_por_zona2) +
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
+>>>>>>> Stashed changes
 =======
 >>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
 >>>>>>> Stashed changes
@@ -621,6 +666,7 @@ nO obstante, eso no significa que haya individuos específicos que se salgan del
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       mutate(fecha_año_mes = format(fecha, "%Y-%m"),
              participacion = votos_candidaturas + votos_blancos + votos_nulos)
 
@@ -634,6 +680,8 @@ nO obstante, eso no significa que haya individuos específicos que se salgan del
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
       mutate(fecha_año_mes = format(fecha, "%Y-%m"))
 
     surveys <- surveys |> 
@@ -641,6 +689,9 @@ nO obstante, eso no significa que haya individuos específicos que se salgan del
 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -661,6 +712,7 @@ nO obstante, eso no significa que haya individuos específicos que se salgan del
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
     # Unir las tablas surveys y election_data por las columnas fecha_año_mes y partido/siglas
     elecciones_encuestas <- encuestas_filtradas |> 
@@ -678,13 +730,20 @@ nO obstante, eso no significa que haya individuos específicos que se salgan del
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     # Unir las tablas surveys y election_data por las columnas fecha_año_mes y partido/siglas
     elecciones_encuestas <- surveys |> 
 <<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
 <<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
+<<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
+>>>>>>> Stashed changes
+=======
+<<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
 <<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
 >>>>>>> Stashed changes
       inner_join(election_data, by = c("fecha_año_mes" = "fecha_año_mes", "partido" = "siglas"))
@@ -693,15 +752,24 @@ nO obstante, eso no significa que haya individuos específicos que se salgan del
 >>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 ========
       inner_join(resultados_votos, by = c("fecha_año_mes" = "fecha_año_mes", "partido" = "siglas"))
 >>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 ========
       inner_join(resultados_votos, by = c("fecha_año_mes" = "fecha_año_mes", "partido" = "siglas"))
 >>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
+========
+      inner_join(resultados_votos, by = c("fecha_año_mes" = "fecha_año_mes", "partido" = "siglas"))
+>>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 ========
       inner_join(resultados_votos, by = c("fecha_año_mes" = "fecha_año_mes", "partido" = "siglas"))
 >>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
@@ -712,6 +780,9 @@ nO obstante, eso no significa que haya individuos específicos que se salgan del
       mutate(error_absoluto = abs(total_votos - puntuacion * total_votantes / 100))
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -745,12 +816,17 @@ Debes incluir [**al menos 3 preguntas "originales" más**]{.hl-orange} que consi
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 <<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
 ========
 >>>>>>> Stashed changes
 =======
 =======
+<<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
+>>>>>>> Stashed changes
+=======
+<<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
 <<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
 >>>>>>> Stashed changes
 <<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
@@ -759,8 +835,15 @@ Debes incluir [**al menos 3 preguntas "originales" más**]{.hl-orange} que consi
 ========
 >>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
+========
+>>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
+>>>>>>> Stashed changes
+=======
+========
+>>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
 ========
 >>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
 >>>>>>> Stashed changes
@@ -876,8 +959,11 @@ plt1
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
 ¿Y los bloques?
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -935,7 +1021,10 @@ resultados_porcentajes2 <- resultados_porcentajes2 |>
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -983,6 +1072,9 @@ ggplot(resultados_porcentajes2, aes(fill = Grupo, values = porcentaje))+
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1049,11 +1141,16 @@ Existe una **diferencia significativa** entre las proporciones de votos en blanc
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
 >>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
 >>>>>>> Stashed changes
 =======
 =======
+<<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
+>>>>>>> Stashed changes
+=======
+<<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
 <<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
 >>>>>>> Stashed changes
 <<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B-contents
@@ -1061,8 +1158,15 @@ Existe una **diferencia significativa** entre las proporciones de votos en blanc
 ========
 >>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
+========
+>>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
+>>>>>>> Stashed changes
+=======
+========
+>>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
 ========
 >>>>>>>> Stashed changes:.Rproj.user/BF4ACE88/sources/session-adf13b50/9D1171DB-contents
 >>>>>>> Stashed changes

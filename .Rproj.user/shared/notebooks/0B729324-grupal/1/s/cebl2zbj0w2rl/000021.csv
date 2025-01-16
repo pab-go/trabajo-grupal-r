@@ -53,6 +53,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<<< Updated upstream:.Rproj.user/shared/notebooks/0B729324-grupal/1/s/cusj302ifzd0i/00002c.csv
 "0","  scale_fill_manual(values= c(CS = ""orange"", UP = ""purple"", VOX = ""green"",OTROS=""grey"",MP=""#009975"",BNG=""#6AADE4"",PNV=""#086522"",""CONVERGÈNCIA I UNIÓ""=""#FFDFC4"",ERC=""yellow"",BILDU=""#30D5C8"",PSOE=""red"", PP=""blue""))+theme(legend.position = ""bottom"")+labs(x=""partidos"",y=""diferencia"")"
 "0",""
@@ -62,6 +63,8 @@
 "0","  scale_fill_manual(values = c(""blue"")) +  # Un solo color para toda la caja"
 "0","  theme_minimal() +  # Estilo minimalista"
 ========
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -92,6 +95,7 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>>> Stashed changes:.Rproj.user/shared/notebooks/0B729324-grupal/1/s/cebl2zbj0w2rl/000021.csv
 =======
 >>>>>>> Stashed changes
@@ -148,6 +152,8 @@
 >>>>>>>> Stashed changes:.Rproj.user/shared/notebooks/0B729324-grupal/1/s/cebl2zbj0w2rl/000021.csv
 ========
 >>>>>>>> Stashed changes:.Rproj.user/shared/notebooks/0B729324-grupal/1/s/cebl2zbj0w2rl/000021.csv
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -180,7 +186,11 @@
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 "0","  plot_layout(ncol = 2, widths = c(2.75, 1.25))+labs(title = ""Gráficos de la diferencia de porcentajes por partido y valores anómalos de entre ellos"")"
+=======
+"0","  plot_layout(ncol = 2, widths = c(2.75, 1.25))"
+>>>>>>> Stashed changes
 =======
 "0","  plot_layout(ncol = 2, widths = c(2.75, 1.25))"
 >>>>>>> Stashed changes

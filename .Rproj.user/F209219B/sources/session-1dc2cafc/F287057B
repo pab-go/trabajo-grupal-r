@@ -1,0 +1,52 @@
+{
+    "id": "F287057B",
+    "path": "C:/Users/cyanm/Downloads/trabajo-grupal-r/grupal.qmd",
+    "project_path": "grupal.qmd",
+    "type": "quarto_markdown",
+    "hash": "2385731756",
+    "contents": "",
+    "dirty": true,
+    "created": 1735899990965.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "499,7",
+        "scrollLine": "0",
+        "rmdVisualMode": "true",
+        "rmdVisualWrapConfigured": "true",
+        "docOutlineVisible": "1",
+        "rmdVisualCollapsedChunks": "",
+<<<<<<< HEAD:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B
+<<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B
+        "rmdVisualModeLocation": "16369:0",
+=======
+        "rmdVisualModeLocation": "18135:0",
+>>>>>>> main:.Rproj.user/F209219B/sources/session-1dc2cafc/F287057B
+        "docOutlineSize": "80"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1737042452,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+<<<<<<< HEAD:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B
+    "last_content_update": 1736679259669,
+========
+        "rmdVisualModeLocation": "18697:9317",
+        "docOutlineSize": "80"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1737044905,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1737044977052,
+>>>>>>>> Stashed changes:.Rproj.user/F209219B/sources/session-9eb36928/F287057B
+=======
+    "last_content_update": 1737044780905,
+>>>>>>> main:.Rproj.user/F209219B/sources/session-1dc2cafc/F287057B
+    "read_only": false,
+    "read_only_alternatives": []
+}

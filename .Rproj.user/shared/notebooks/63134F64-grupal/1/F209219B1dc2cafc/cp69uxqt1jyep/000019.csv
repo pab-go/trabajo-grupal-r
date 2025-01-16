@@ -1,0 +1,6 @@
+"0",""
+"0","#Inner join para saber el nombre del municipio"
+"0","ganadores <- ganadores |> "
+"0","  inner_join(cod_mun, by = c(""id_mun""=""cod_mun""))"
+"0",""
+"0",""

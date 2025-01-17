@@ -282,6 +282,7 @@ ganadores
 -   ¿Qué partido fue el segundo cuando el primero fue el PSOE? ¿Y cuando el primero fue el PP?
 
     ```{r}
+<<<<<<< HEAD
     
     resultado_PSOE <- election_data |> 
       group_by(fecha, id_mun) |> 
@@ -301,27 +302,30 @@ ganadores
       select(fecha, id_mun, censo, participacion_1, participacion_2, 
              siglas_primero = siglas, votos_primero = votos, 
              siglas_segundo, votos_segundo)
+=======
+    obtener_segundo_partido <- function(election_data, partido_primero) {
+      election_data |> 
+        group_by(fecha, id_mun) |> 
+        arrange(desc(votos)) |> 
+        mutate(ranking = row_number()) |> 
+        filter(ranking == 1 & siglas == partido_primero) |> 
+        left_join(
+          election_data |> 
+            group_by(fecha, id_mun) |> 
+            arrange(desc(votos)) |> 
+            mutate(ranking = row_number()) |> 
+            filter(ranking == 2) |> 
+            select(fecha, id_mun, siglas_segundo = siglas, votos_segundo = votos),
+          by = c("fecha", "id_mun")
+        ) |> 
+        select(fecha, id_mun,siglas_primero = siglas, votos_primero = votos, 
+               siglas_segundo, votos_segundo)
+    }
+>>>>>>> main
 
-    #para el ver con el PP solo hace falta cambiar el nombre
-
-    resultado_PP <- election_data |> 
-      group_by(fecha, id_mun) |> 
-      arrange(desc(votos)) |> 
-      mutate(ranking = row_number()) |> 
-      filter(ranking == 1 & siglas == "PP") |> 
-    # Hacer un join con los datos del segundo partido más votado en los mismos grupos
-      left_join(
-        election_data |> 
-          group_by(fecha, id_mun) |> 
-          arrange(desc(votos)) |> 
-          mutate(ranking = row_number()) |> 
-          filter(ranking == 2) |> 
-          select(fecha, id_mun, siglas_segundo = siglas, votos_segundo = votos),
-        by = c("fecha", "id_mun")
-      ) |> 
-      select(fecha, id_mun, censo, participacion_1, participacion_2, 
-             siglas_primero = siglas, votos_primero = votos, 
-             siglas_segundo, votos_segundo)
+    # Uso de la función
+    resultado_PSOE <- obtener_segundo_partido(election_data, "PSOE")
+    resultado_PP <- obtener_segundo_partido(election_data, "PP")
     ```
 
 ---
@@ -447,7 +451,11 @@ ggplot(datos_grupos, aes(x = censo_medio, y = participacion_media)) +
 # Seleccionar el partido ganador por municipio y clasificar por zona
 election_data <- election_data |> 
   mutate(
+<<<<<<< HEAD
     zona = if_else(censo <= 2500, "Rural", "Urbana")  # Clasificación por zona
+=======
+    zona = if_else(censo <= 10000, "Rural", "Urbana")                      # Clasificación por zona
+>>>>>>> main
   ) 
 
 votos_por_zona <- election_data |> summarise(votos=sum(votos), .by = c(zona,siglas))
@@ -504,19 +512,25 @@ nO obstante, eso no significa que haya individuos específicos que se salgan del
     ```{r}
     # Creamos una variable en election_data y en surveys que sea la fecha de las elecciones sin el día
     election_data <- election_data |> 
-      mutate(fecha_año_mes = format(fecha, "%Y-%m"),
-             participacion = votos_candidaturas + votos_blancos + votos_nulos)
+      mutate(fecha_año_mes = format(fecha, "%Y-%m"))
 
-    encuestas_filtradas <- surveys |> 
+    surveys <- surveys |> 
       mutate(fecha_año_mes = format(date_elec, "%Y-%m"))
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> main
     # Calcular el total de votos por partido y el total de votantes por fecha
     resultados_votos <- election_data |> 
       group_by(fecha_año_mes) |> 
       mutate(total_votantes = sum(votos, na.rm = TRUE)) |>   # Calcular total de votantes por fecha
+<<<<<<< HEAD
       ungroup() |> 
+=======
+      ungroup() %>%
+>>>>>>> main
       group_by(fecha_año_mes, siglas) |> 
       summarize(
         total_votos = sum(votos, na.rm = TRUE),  # Total de votos por partido
@@ -524,16 +538,17 @@ nO obstante, eso no significa que haya individuos específicos que se salgan del
         .groups = "drop"
       )
 
+<<<<<<< HEAD
 >>>>>>> Stashed changes
+=======
+>>>>>>> main
     # Unir las tablas surveys y election_data por las columnas fecha_año_mes y partido/siglas
-    elecciones_encuestas <- encuestas_filtradas |> 
-      inner_join(election_data, by = c("fecha_año_mes" = "fecha_año_mes", "partido" = "siglas")) |> select(-c(participacion_1,participacion_2,numero_mesas,zona,size,turnout,partidos))
+    elecciones_encuestas <- surveys |> 
+      inner_join(resultados_votos, by = c("fecha_año_mes" = "fecha_año_mes", "partido" = "siglas"))
 
     # Calcular el error absoluto
     elecciones_encuestas <- elecciones_encuestas |> 
-      mutate(votos_estimados_censo = puntuacion / 100 * censo,
-    error_absoluto = abs(votos_estimados_censo - votos)
-      ) 
+      mutate(error_absoluto = abs(total_votos - puntuacion * total_votantes / 100))
     ```
 
 ---
@@ -667,6 +682,7 @@ plt1
 
 ```
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -686,6 +702,8 @@ plt1
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 
+=======
+>>>>>>> main
 ¿Y los bloques?
 =======
 >>>>>>> Stashed changes
@@ -784,6 +802,7 @@ resultados_porcentajes2 <- resultados_porcentajes2 |>
 
 ```
 
+<<<<<<< HEAD
 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
@@ -928,6 +947,8 @@ ggplot(resultados_porcentajes2, aes(fill = Grupo, values = porcentaje))+
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> main
 ¿Existen diferencias significativas en los patrones de votos nulos y blancos entre municipios urbanos y rurales?
 
 ```{r}

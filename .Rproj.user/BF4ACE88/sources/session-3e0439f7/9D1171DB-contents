@@ -38,12 +38,6 @@ library(ggplot2)
 library(lubridate)
 library(forcats)
 library(patchwork)
-library(ggtext) 
-library(ggnewscale) 
-library(waffle)
-library(camcorder)
-library(showtext)
-
 ```
 
 ------------------------------------------------------------------------
@@ -138,8 +132,6 @@ Además de lo que consideres oportuno realizar, los siguientes elementos son obl
       mutate(across(where(is.logical), as.numeric))
     ```
 
----
-
 2.  Debes incluir al menos un join entre tablas.
 
 3.  Recordatorio: información = varianza
@@ -151,7 +143,8 @@ cod_mun_dist <- cod_mun |> summarise(across(everything(), n_distinct))
 surveys_dist <- surveys |> summarise(across(everything(), n_distinct))
 abbrev_dist <- abbrev |> summarise(across(everything(), n_distinct)) 
 
-# Eliminamos las columnas en las que su valor es el mismo siempre
+# en tres (tipo_eleccion, vuelta, codigo_distrito_electoral) tenemos 
+# un solo valor cte --> no nos aporta nada
 
 election_data <-
   election_data |> 
@@ -159,7 +152,6 @@ election_data <-
 surveys <- surveys |> select(-type_survey)
 ```
 
----
 4.  Los paquetes `{glue}`, `{forcats}` y `{lubridate}` deben ser utilizados en algún punto
 
 5.  Los siguientes elementos deben usarse al menos una vez: mutate, summarise, group_by (o su equivalente), case_when
@@ -180,6 +172,8 @@ surveys <- surveys |> select(-type_survey)
 -   CONVERGÈNCIA I UNIÓ
 
 ------------------------------------------------------------------------
+
+## Ítems obligatorios
 
 7.  Contamos con muchos partidos que se presentan a las elecciones. Solo nos interesarán los siguientes partidos:
 
@@ -207,6 +201,7 @@ str_detect(partidos, "VOX") ~ "VOX",
 str_detect(partidos,"CONVERGÈNCIA I UNIÓ")~"CONVERGÈNCIA I UNIÓ",
 TRUE ~ "OTROS"))
 
+
 ```
 
 ------------------------------------------------------------------------
@@ -218,8 +213,6 @@ TRUE ~ "OTROS"))
 9.  Las siglas deben ser usadas en las visualizaciones (ideas en <https://r-graph-gallery.com/>).
 
 10. Debes usar todos los archivos en algún momento.
-
----
 
 11. Debes descartar las encuestas que:
 
@@ -250,13 +243,13 @@ surveys <- surveys |>
 
 ```{r}
 
-# Creo un identificador único por municipio y por elección
+# Transformar los datos y generar identificadores
 election_data <- election_data |> 
   mutate(
     id_mun = (glue("{codigo_ccaa}-{codigo_provincia}-{codigo_municipio}")),
     fecha = (as_date(glue("{anno}-{mes}-01")))
   )  |> 
-  select(-c(anno,mes,codigo_ccaa,codigo_provincia,codigo_municipio)) |> 
+  select(-anno, -mes, -codigo_ccaa, -codigo_provincia, -codigo_municipio) |> 
   select(fecha, id_mun, everything())
 
 # Filtrar municipios con más de 100,000 habitantes
@@ -268,63 +261,41 @@ ganadores <- election_data |>
   ungroup() |>
   select(id_mun, fecha, siglas, votos)
 # Mostrar los resultados
+print(ganadores)
 
 #Inner join para saber el nombre del municipio
 ganadores <- ganadores |> 
   inner_join(cod_mun, by = c("id_mun"="cod_mun"))
 
-ganadores
 
 ```
-
----
 
 -   ¿Qué partido fue el segundo cuando el primero fue el PSOE? ¿Y cuando el primero fue el PP?
 
     ```{r}
-    
-    resultado_PSOE <- election_data |> 
-      group_by(fecha, id_mun) |> 
-      arrange(desc(votos)) |> 
-      mutate(ranking = row_number()) |> 
-      filter(ranking == 1 & siglas == "PSOE") |> 
-    # Hacer un join con los datos del segundo partido más votado en los mismos grupos
-      left_join(
-        election_data |> 
-          group_by(fecha, id_mun) |> 
-          arrange(desc(votos)) |> 
-          mutate(ranking = row_number()) |> 
-          filter(ranking == 2) |> 
-          select(fecha, id_mun, siglas_segundo = siglas, votos_segundo = votos),
-        by = c("fecha", "id_mun")
-      ) |> 
-      select(fecha, id_mun, censo, participacion_1, participacion_2, 
-             siglas_primero = siglas, votos_primero = votos, 
-             siglas_segundo, votos_segundo)
+    obtener_segundo_partido <- function(election_data, partido_primero) {
+      election_data |> 
+        group_by(fecha, id_mun) |> 
+        arrange(desc(votos)) |> 
+        mutate(ranking = row_number()) |> 
+        filter(ranking == 1 & siglas == partido_primero) |> 
+        left_join(
+          election_data |> 
+            group_by(fecha, id_mun) |> 
+            arrange(desc(votos)) |> 
+            mutate(ranking = row_number()) |> 
+            filter(ranking == 2) |> 
+            select(fecha, id_mun, siglas_segundo = siglas, votos_segundo = votos),
+          by = c("fecha", "id_mun")
+        ) |> 
+        select(fecha, id_mun,siglas_primero = siglas, votos_primero = votos, 
+               siglas_segundo, votos_segundo)
+    }
 
-    #para el ver con el PP solo hace falta cambiar el nombre
-
-    resultado_PP <- election_data |> 
-      group_by(fecha, id_mun) |> 
-      arrange(desc(votos)) |> 
-      mutate(ranking = row_number()) |> 
-      filter(ranking == 1 & siglas == "PP") |> 
-    # Hacer un join con los datos del segundo partido más votado en los mismos grupos
-      left_join(
-        election_data |> 
-          group_by(fecha, id_mun) |> 
-          arrange(desc(votos)) |> 
-          mutate(ranking = row_number()) |> 
-          filter(ranking == 2) |> 
-          select(fecha, id_mun, siglas_segundo = siglas, votos_segundo = votos),
-        by = c("fecha", "id_mun")
-      ) |> 
-      select(fecha, id_mun, censo, participacion_1, participacion_2, 
-             siglas_primero = siglas, votos_primero = votos, 
-             siglas_segundo, votos_segundo)
+    # Uso de la función
+    resultado_PSOE <- obtener_segundo_partido(election_data, "PSOE")
+    resultado_PP <- obtener_segundo_partido(election_data, "PP")
     ```
-
----
 
 -   ¿A quién beneficia la baja participación?
 
@@ -360,12 +331,11 @@ ggplot(corr_participacion, aes(x = reorder(siglas, correlacion), y = correlacion
 
 ```
 
----
 -   ¿Cómo analizar la relación entre censo y voto? ¿Es cierto que determinados partidos ganan en las zonas rurales?
 
 ```{r}
 
-#MEdia de participación en cada municipio
+
 election_data_rcs <- election_data |> 
     mutate("participacion" = 100*(votos_candidaturas + votos_blancos + votos_nulos) / censo,) |> summarise(participacion=mean(participacion),
           censo=mean(censo), .by = id_mun)
@@ -391,52 +361,6 @@ ggplot(election_data_rcs, aes(x = censo, y = participacion)) +
     legend.position = "top"  # Posición de la leyenda
   )
 
-# Crear grupos de censo con case_when
-datos_grupos <- election_data_rcs |> 
-  mutate(
-  grupo_censo = case_when(
-    censo <= 500 ~ "1: ≤500",                       # Primeros 3 rangos más pequeños
-    censo > 500 & censo <= 2500 ~ "2: 500-2.5",
-    censo > 2500 & censo <= 4000 ~ "3: 2.5k-4k",
-    censo > 4000 & censo <= 7500 ~ "4: 4k-7.5k",    # Intermedios más finos
-    censo > 7500 & censo <= 10000 ~ "5: 7.5k-10k",
-    censo > 10000 & censo <= 15000 ~ "6: 10k-15k",
-    censo > 15000 & censo <= 20000 ~ "7: 15k-20k",
-    censo > 20000 & censo <= 30000 ~ "8: 20k-30k",  # Más granularidad en intermedios
-    censo > 30000 & censo <= 50000 ~ "9: 30k-50k",
-    censo > 50000 & censo <= 75000 ~ "10: 50k-75k",
-    censo > 75000 & censo <= 100000 ~ "11: 75k-100k",
-    censo > 100000 & censo <= 150000 ~ "12: 100k-150k", # Rango más amplio en superiores
-    censo > 150000 & censo <= 250000 ~ "13: 150k-250k",
-    censo > 250000 & censo <= 500000 ~ "14: 250k-500k",
-    censo > 500000 ~ "15: >500k"
-  )
-)|> 
-  group_by(grupo_censo) |> 
-  summarise(
-    participacion_media = median(participacion, na.rm = TRUE), # Media de participación
-    participacion_sd = sd(participacion, na.rm = TRUE),     # Desviación estándar
-    censo_medio = median(censo, na.rm = TRUE),                # Tamaño medio del censo en cada grupo
-    n_municipios = n()                                      # Número de municipios en el grupo
-  )
-
-# Visualizar los grupos
-print(datos_grupos)
-
-# Crear una regresión lineal sobre los puntos calculados
-modelo <- lm(participacion_media ~ censo_medio, data = datos_grupos)
-summary(modelo)
-
-# Gráfico de la relación (simplificado con menos puntos)
-ggplot(datos_grupos, aes(x = censo_medio, y = participacion_media)) +
-  geom_point(aes(size = n_municipios), color = "steelblue") +  # Tamaño proporcional al número de municipios
-  geom_smooth(method = "lm", color = "red", se = TRUE) +       # Línea de regresión lineal
-  labs(
-    title = "Relación entre Censo Medio y Participación Media por Grupo",
-    x = "Censo Medio por Grupo",
-    y = "Participación Media (%)"
-  ) +
-  theme_minimal()
 
 
 
@@ -489,20 +413,17 @@ ggplot(datos_grupos, aes(x = censo_medio, y = participacion_media)) +
 
 ```
 
----
-
 ```{r}
 
 # Seleccionar el partido ganador por municipio y clasificar por zona
 election_data <- election_data |> 
   mutate(
-    zona = if_else(censo <= 2500, "Rural", "Urbana")  # Clasificación por zona
+    zona = if_else(censo <= 10000, "Rural", "Urbana")                      # Clasificación por zona
   ) 
 
 votos_por_zona <- election_data |> summarise(votos=sum(votos), .by = c(zona,siglas))
 
 votos_por_zona2 <- votos_por_zona |> pivot_wider(names_from = zona, values_from = votos) |> mutate(rural=(Rural/sum(Rural))*100, urbana=(Urbana/sum(Urbana))*100, dif_perc=rural-urbana) 
-
 #TEst de wilcoxon-MAnWhitney
 wilcox.test(votos_por_zona2$rural, votos_por_zona2$urbana, paired = TRUE)
 
@@ -515,14 +436,6 @@ barras_rural <- ggplot(votos_por_zona2) +
   scale_fill_manual(values= c(CS = "orange", UP = "purple", VOX = "green",OTROS="grey",MP="#009975",BNG="#6AADE4",PNV="#086522","CONVERGÈNCIA I UNIÓ"="#FFDFC4",ERC="yellow",BILDU="#30D5C8",PSOE="red", PP="blue"))+
   theme(axis.text.x = element_text(angle = 45, hjust = 1),
         axis.title.x = element_blank(),
-<<<<<<<< HEAD:.Rproj.user/BF4ACE88/sources/session-adf13b50/2A781349-contents
-        legend.position = "none")+
-  labs(title = "Diferencia en porcentaje en zonas rurales y urbanas y anómalos",y="diferencia")
-
-bigotes_rural <-ggplot(votos_por_zona2) +
-  geom_boxplot(aes(y = dif_perc, fill = "#CDAA7D"), width = 0.4) +  # Una sola caja para toda la variable
-  scale_y_continuous(limits = c(-4, 4)) +  # Ajuste de los límites del eje Y
-========
         legend.position = "bottom")+
   labs(x="partidos",y="diferencia")
 
@@ -530,32 +443,18 @@ bigotes_rural <-ggplot(votos_por_zona2) +
   geom_boxplot(aes(y = dif_perc, fill = "#CDAA7D"), width = 0.5) +  # Una sola caja para toda la variable
   scale_y_continuous(limits = c(-4, 4)) +  # Ajuste de los límites del eje Y
   theme_minimal() +  # Estilo minimalista
->>>>>>>> main:.Rproj.user/F209219B/sources/session-487f2f4c/F287057B-contents
   theme(
     axis.text.x = element_blank(),  # Eliminar el eje X
     axis.ticks.x = element_blank(),  # Eliminar las marcas del eje X
     axis.title.x = element_blank(),  # Eliminar el título del eje X
     axis.line.x = element_blank(),
     axis.title.y = element_blank(),
-    legend.position = "none",
-     theme(
-    margin = margin(20, 20, 20, 0),
-    plot.title = element_markdown(
-      family = "Econ Sans Cnd", 
-      size = 15
-    )
+    legend.position = "none"   # Eliminar la línea del eje X
   )
-<<<<<<<< HEAD:.Rproj.user/BF4ACE88/sources/session-adf13b50/2A781349-contents
-  )
-========
->>>>>>>> main:.Rproj.user/F209219B/sources/session-487f2f4c/F287057B-contents
  barras_rural+bigotes_rural+ 
   plot_layout(ncol = 2, widths = c(2.75, 1.25))
 
 ```
-
-En general, las dos muestras se posicionan bastante iguales entre sí, o eso es lo que nos indica el p-valor.
-nO obstante, eso no significa que haya individuos específicos que se salgan del promedio. Estos son PP,Psoe,CIudadanos y UP.
 
 ------------------------------------------------------------------------
 
@@ -566,26 +465,16 @@ nO obstante, eso no significa que haya individuos específicos que se salgan del
     ```{r}
     # Creamos una variable en election_data y en surveys que sea la fecha de las elecciones sin el día
     election_data <- election_data |> 
-      mutate(fecha_año_mes = format(fecha, "%Y-%m"),
-             participacion = votos_candidaturas + votos_blancos + votos_nulos)
+      mutate(fecha_año_mes = format(fecha, "%Y-%m"))
 
-    encuestas_filtradas <- surveys |> 
+    surveys <- surveys |> 
       mutate(fecha_año_mes = format(date_elec, "%Y-%m"))
 
-<<<<<<<< HEAD:.Rproj.user/BF4ACE88/sources/session-adf13b50/2A781349-contents
-<<<<<<< Updated upstream
-=======
-========
->>>>>>>> main:.Rproj.user/F209219B/sources/session-487f2f4c/F287057B-contents
     # Calcular el total de votos por partido y el total de votantes por fecha
     resultados_votos <- election_data |> 
       group_by(fecha_año_mes) |> 
       mutate(total_votantes = sum(votos, na.rm = TRUE)) |>   # Calcular total de votantes por fecha
-<<<<<<<< HEAD:.Rproj.user/BF4ACE88/sources/session-adf13b50/2A781349-contents
-      ungroup() |> 
-========
       ungroup() %>%
->>>>>>>> main:.Rproj.user/F209219B/sources/session-487f2f4c/F287057B-contents
       group_by(fecha_año_mes, siglas) |> 
       summarize(
         total_votos = sum(votos, na.rm = TRUE),  # Total de votos por partido
@@ -593,18 +482,6 @@ nO obstante, eso no significa que haya individuos específicos que se salgan del
         .groups = "drop"
       )
 
-<<<<<<<< HEAD:.Rproj.user/BF4ACE88/sources/session-adf13b50/2A781349-contents
->>>>>>> Stashed changes
-    # Unir las tablas surveys y election_data por las columnas fecha_año_mes y partido/siglas
-    elecciones_encuestas <- encuestas_filtradas |> 
-      inner_join(election_data, by = c("fecha_año_mes" = "fecha_año_mes", "partido" = "siglas")) |> select(-c(participacion_1,participacion_2,numero_mesas,zona,size,turnout,partidos))
-
-    # Calcular el error absoluto
-    elecciones_encuestas <- elecciones_encuestas |> 
-      mutate(votos_estimados_censo = puntuacion / 100 * censo,
-    error_absoluto = abs(votos_estimados_censo - votos)
-      ) 
-========
     # Unir las tablas surveys y election_data por las columnas fecha_año_mes y partido/siglas
     elecciones_encuestas <- surveys |> 
       inner_join(resultados_votos, by = c("fecha_año_mes" = "fecha_año_mes", "partido" = "siglas"))
@@ -612,10 +489,7 @@ nO obstante, eso no significa que haya individuos específicos que se salgan del
     # Calcular el error absoluto
     elecciones_encuestas <- elecciones_encuestas |> 
       mutate(error_absoluto = abs(total_votos - puntuacion * total_votantes / 100))
->>>>>>>> main:.Rproj.user/F209219B/sources/session-487f2f4c/F287057B-contents
     ```
-
----
 
 -   ¿Qué casas encuestadoras acertaron más y cuáles se desviaron más de los resultados?
 
@@ -635,33 +509,24 @@ pollster_max_error <- pollster_error |>
   filter(total_error == max(total_error))
 ```
 
----
 Debes incluir [**al menos 3 preguntas "originales" más**]{.hl-orange} que consideres interesantes de responder utilizando los datos.
 
 ¿Ha subido el peso de los grandes partidos, de los partidos nacionalistas y de los partidos nuevos a lo largo del tiempo?
 
 ```{r}
  
-<<<<<<<< HEAD:.Rproj.user/BF4ACE88/sources/session-adf13b50/2A781349-contents
-
-========
 library(ggplot2)
 library(ggtext) # Para usar `element_markdown`
 library(ggnewscale) # Para usar `new_scale_color`
 
 
->>>>>>>> main:.Rproj.user/F209219B/sources/session-487f2f4c/F287057B-contents
 # Paso 1: Calcular el censo único por elección
 censo_por_eleccion <- election_data |> 
   group_by(fecha, id_mun) |>  # Agrupar por elección y municipio
   slice(1)|> 
   ungroup() |> 
   group_by(fecha) |>  # Agrupar nuevamente por elección
-<<<<<<<< HEAD:.Rproj.user/BF4ACE88/sources/session-adf13b50/2A781349-contents
-  summarise(censo_total = sum(censo, na.rm = TRUE), .groups = "drop")  # Sumar el censo por elección
-========
   summarise(censo_total = sum(participacion, na.rm = TRUE), .groups = "drop")  # Sumar el censo por elección
->>>>>>>> main:.Rproj.user/F209219B/sources/session-487f2f4c/F287057B-contents
 
 # Paso 2: Agrupar votos por grupo y calcular el porcentaje
 resultados_porcentajes <- election_data |> 
@@ -692,11 +557,7 @@ GREY_DARKER <- "#5C5B5D"
 RED <- "#E3120B"
 
 plt1 <- ggplot(resultados_porcentajes, aes(fecha, porcentaje)) +
-<<<<<<<< HEAD:.Rproj.user/BF4ACE88/sources/session-adf13b50/2A781349-contents
-  geom_line(aes(color = Grupo,size= 1.2)) +
-========
   geom_line(aes(color = Grupo,size= 1.5)) +
->>>>>>>> main:.Rproj.user/F209219B/sources/session-487f2f4c/F287057B-contents
   geom_point(
     aes(fill = Grupo), 
     size = 5, 
@@ -706,12 +567,7 @@ plt1 <- ggplot(resultados_porcentajes, aes(fecha, porcentaje)) +
   ) +
  scale_color_manual(values = c(BLUE, GREEN, BROWN,GREY)) +
   scale_fill_manual(values = c(BLUE, GREEN, BROWN,GREY)) + 
-<<<<<<<< HEAD:.Rproj.user/BF4ACE88/sources/session-adf13b50/2A781349-contents
-   theme_minimal()+
-  theme(legend.position = "right")+
-========
   theme(legend.position = "bottom")+
->>>>>>>> main:.Rproj.user/F209219B/sources/session-487f2f4c/F287057B-contents
   scale_x_date(
     breaks = unique(resultados_porcentajes$fecha),   # Usar solo las fechas específicas
     date_labels = "%Y"           # Mostrar solo el año en las etiquetas
@@ -731,16 +587,6 @@ plt1 <- ggplot(resultados_porcentajes, aes(fecha, porcentaje)) +
     # But keep tick marks on horizontal axis
     axis.ticks.length.x = unit(2, "mm"),
     # Remove the title for both axes
-<<<<<<<< HEAD:.Rproj.user/BF4ACE88/sources/session-adf13b50/2A781349-contents
-    axis.title = element_text(size = 11, face = "bold"), # Estilo de títulos de los ejes,
-    # Only the bottom line of the vertical axis is painted in black
-    axis.line.x.bottom = element_line(color = "black"),
-    # Remove labels from the vertical axis
-    axis.text.y = element_text(family = "Econ Sans Cnd", size = 12),
-    # But customize labels for the horizontal axis
-    axis.text.x = element_text(family = "Econ Sans Cnd", size = 12,angle = 45)
-  )+
-========
     axis.title = element_blank(),
     # Only the bottom line of the vertical axis is painted in black
     axis.line.x.bottom = element_line(color = "black"),
@@ -754,7 +600,6 @@ plt1 <- ggplot(resultados_porcentajes, aes(fecha, porcentaje)) +
     axis.title = element_text(size = 11, face = "bold"), # Estilo de títulos de los ejes
     axis.text = element_text(size = 12)
   ) + 
->>>>>>>> main:.Rproj.user/F209219B/sources/session-487f2f4c/F287057B-contents
     guides(size = "none")+
   labs(
     title = "Evolución del porcentaje de votos por grupo",
@@ -771,11 +616,7 @@ plt1 <- plt1 +
     margin = margin(20, 20, 20, 0),
     plot.title = element_markdown(
       family = "Econ Sans Cnd", 
-<<<<<<<< HEAD:.Rproj.user/BF4ACE88/sources/session-adf13b50/2A781349-contents
-      size = 15
-========
       size = 20
->>>>>>>> main:.Rproj.user/F209219B/sources/session-487f2f4c/F287057B-contents
     )
   )
 
@@ -786,92 +627,8 @@ plt1
 
 ```
 
-<<<<<<<< HEAD:.Rproj.user/BF4ACE88/sources/session-adf13b50/2A781349-contents
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-
-¿Y los bloques?
-=======
->>>>>>> Stashed changes
-
-=======
-
->>>>>>> Stashed changes
-=======
-
->>>>>>> Stashed changes
-=======
-
->>>>>>> Stashed changes
-=======
-
->>>>>>> Stashed changes
-=======
-
->>>>>>> Stashed changes
-=======
-
->>>>>>> Stashed changes
-=======
-
->>>>>>> Stashed changes
-=======
-
->>>>>>> Stashed changes
-=======
-
->>>>>>> Stashed changes
-=======
-
->>>>>>> Stashed changes
-=======
-
->>>>>>> Stashed changes
-=======
-
->>>>>>> Stashed changes
-=======
-
->>>>>>> Stashed changes
-=======
-
->>>>>>> Stashed changes
-=======
-
->>>>>>> Stashed changes
-=======
-
->>>>>>> Stashed changes
-=======
-
->>>>>>> Stashed changes
-
-
-
----
-
-
-¿Y los bloques?
-========
 ¿Y los bloques?
 
->>>>>>>> main:.Rproj.user/F209219B/sources/session-487f2f4c/F287057B-contents
 ```{r}
 # Paso 1: Calcular el censo único por elección
 censo_por_eleccion <- election_data |> 
@@ -879,11 +636,7 @@ censo_por_eleccion <- election_data |>
   slice(1)|> 
   ungroup() |> 
   group_by(fecha) |>  # Agrupar nuevamente por elección
-<<<<<<<< HEAD:.Rproj.user/BF4ACE88/sources/session-adf13b50/2A781349-contents
-  summarise(censo_total = sum(censo, na.rm = TRUE), .groups = "drop")  # Sumar el censo por elección
-========
   summarise(censo_total = sum(participacion, na.rm = TRUE), .groups = "drop")  # Sumar el censo por elección
->>>>>>>> main:.Rproj.user/F209219B/sources/session-487f2f4c/F287057B-contents
 
 # Paso 2: Agrupar votos por grupo y calcular el porcentaje
 resultados_porcentajes2 <- election_data |> 
@@ -907,157 +660,6 @@ resultados_porcentajes2 <- election_data |>
   )
 
 
-<<<<<<<< HEAD:.Rproj.user/BF4ACE88/sources/session-adf13b50/2A781349-contents
-resultados_porcentajes2 <- resultados_porcentajes2 |> 
-  mutate(Grupo = factor(Grupo, levels = c("OTROS","IZQUIERDAS",  "NACIONALISTA/REGIONALISTA", "CENTRO","DERECHAS")))
-
-```
-
-
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-
-```{r}
-#INTENTO DE OTRO GRAFICO MEJOR
-
-library(camcorder)
-library(showtext)
-library(waffle)
-font_add_google("Staatliches","sta")
-font_add_google("Raleway","ral")
-showtext_auto()
-
-ggplot(resultados_porcentajes2, aes(fill = Grupo, values = porcentaje))+
-  geom_waffle( n_rows=6, size = 0.15, colour = "white")+
-  facet_wrap(~fecha,ncol=2,strip.position = "left")+
-  coord_equal()+
-  labs(
-    title="Evolución del reparto del congreso por grupos",
-  )+
-  # Mostrar la leyenda
-  guides(fill = guide_legend(title = "Grupo", color="white",label.theme = element_text(color = "white"))) +
-  
-  scale_fill_manual(values=c(
-    "DERECHAS" = "#E69F00",
-    "IZQUIERDAS" = "#56B4E9",
-    "CENTRO" = "#009E73",
-    "NACIONALISTA/REGIONALISTA" = "#CC79A7",
-    "OTROS" = "#999999"))+
-  theme_void()+
-  theme(
-    plot.background = element_rect(fill="#222725",color=NA),
-    plot.title = element_markdown(size=18,family='sta',margin=margin(10,0,0,0),color='white'),
-    strip.text = element_markdown(hjust=0.1,size=15,family='ral',angle=90,margin=margin(0,0,0,0,'cm'),lineheight = 0.45,color='white')
-  )
-
-```
-
----
-
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-========
 BROWN <- "#AD8C97"
 YELLOW <- "yellow"
 GREEN <- "#2FC1D3"
@@ -1146,7 +748,6 @@ combined_plot <- (plt1 + plt2) +
 combined_plot
 ```
 
->>>>>>>> main:.Rproj.user/F209219B/sources/session-487f2f4c/F287057B-contents
 ¿Existen diferencias significativas en los patrones de votos nulos y blancos entre municipios urbanos y rurales?
 
 ```{r}

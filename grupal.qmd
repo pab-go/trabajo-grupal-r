@@ -273,45 +273,28 @@ ganadores <- ganadores |>
 -   ¿Qué partido fue el segundo cuando el primero fue el PSOE? ¿Y cuando el primero fue el PP?
 
     ```{r}
-    resultado_PSOE <- election_data |> 
-      group_by(fecha, id_mun) |> 
-      arrange(desc(votos)) |> 
-      mutate(ranking = row_number()) |> 
-      filter(ranking == 1 & siglas == "PSOE") |> 
-    # Hacer un join con los datos del segundo partido más votado en los mismos grupos
-      left_join(
-        election_data |> 
-          group_by(fecha, id_mun) |> 
-          arrange(desc(votos)) |> 
-          mutate(ranking = row_number()) |> 
-          filter(ranking == 2) |> 
-          select(fecha, id_mun, siglas_segundo = siglas, votos_segundo = votos),
-        by = c("fecha", "id_mun")
-      ) |> 
-      select(fecha, id_mun, censo, participacion_1, participacion_2, 
-             siglas_primero = siglas, votos_primero = votos, 
-             siglas_segundo, votos_segundo)
+    obtener_segundo_partido <- function(election_data, partido_primero) {
+      election_data |> 
+        group_by(fecha, id_mun) |> 
+        arrange(desc(votos)) |> 
+        mutate(ranking = row_number()) |> 
+        filter(ranking == 1 & siglas == partido_primero) |> 
+        left_join(
+          election_data |> 
+            group_by(fecha, id_mun) |> 
+            arrange(desc(votos)) |> 
+            mutate(ranking = row_number()) |> 
+            filter(ranking == 2) |> 
+            select(fecha, id_mun, siglas_segundo = siglas, votos_segundo = votos),
+          by = c("fecha", "id_mun")
+        ) |> 
+        select(fecha, id_mun,siglas_primero = siglas, votos_primero = votos, 
+               siglas_segundo, votos_segundo)
+    }
 
-    #para el ver con el PP solo hace falta cambiar el nombre
-
-    resultado_PP <- election_data |> 
-      group_by(fecha, id_mun) |> 
-      arrange(desc(votos)) |> 
-      mutate(ranking = row_number()) |> 
-      filter(ranking == 1 & siglas == "PP") |> 
-    # Hacer un join con los datos del segundo partido más votado en los mismos grupos
-      left_join(
-        election_data |> 
-          group_by(fecha, id_mun) |> 
-          arrange(desc(votos)) |> 
-          mutate(ranking = row_number()) |> 
-          filter(ranking == 2) |> 
-          select(fecha, id_mun, siglas_segundo = siglas, votos_segundo = votos),
-        by = c("fecha", "id_mun")
-      ) |> 
-      select(fecha, id_mun, censo, participacion_1, participacion_2, 
-             siglas_primero = siglas, votos_primero = votos, 
-             siglas_segundo, votos_segundo)
+    # Uso de la función
+    resultado_PSOE <- obtener_segundo_partido(election_data, "PSOE")
+    resultado_PP <- obtener_segundo_partido(election_data, "PP")
     ```
 
 -   ¿A quién beneficia la baja participación?
@@ -435,7 +418,7 @@ ggplot(datos_grupos, aes(x = censo_medio, y = participacion_media)) +
 # Seleccionar el partido ganador por municipio y clasificar por zona
 election_data <- election_data |> 
   mutate(
-    zona = if_else(censo <= 2500, "Rural", "Urbana")                      # Clasificación por zona
+    zona = if_else(censo <= 10000, "Rural", "Urbana")                      # Clasificación por zona
   ) 
 
 votos_por_zona <- election_data |> summarise(votos=sum(votos), .by = c(zona,siglas))

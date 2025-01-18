@@ -262,27 +262,6 @@ ganadores
 -   ¿Qué partido fue el segundo cuando el primero fue el PSOE? ¿Y cuando el primero fue el PP?
 
     ```{r}
-<<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-d11abd29/F287057B-contents
-
-    resultado_PSOE <- election_data |> 
-      group_by(fecha, id_mun) |> 
-      arrange(desc(votos)) |> 
-      mutate(ranking = row_number()) |> 
-      filter(ranking == 1 & siglas == "PSOE") |> 
-    # Hacer un join con los datos del segundo partido más votado en los mismos grupos
-      left_join(
-        election_data |> 
-          group_by(fecha, id_mun) |> 
-          arrange(desc(votos)) |> 
-          mutate(ranking = row_number()) |> 
-          filter(ranking == 2) |> 
-          select(fecha, id_mun, siglas_segundo = siglas, votos_segundo = votos),
-        by = c("fecha", "id_mun")
-      ) |> 
-      select(fecha, id_mun, censo, participacion_1, participacion_2, 
-             siglas_primero = siglas, votos_primero = votos, 
-             siglas_segundo, votos_segundo)
-
     obtener_segundo_partido <- function(election_data, partido_primero) {
       election_data |> 
         group_by(fecha, id_mun) |> 
@@ -301,26 +280,6 @@ ganadores
         select(fecha, id_mun,siglas_primero = siglas, votos_primero = votos, 
                siglas_segundo, votos_segundo)}
 
-========
-    obtener_segundo_partido <- function(election_data, partido_primero) {
-      election_data |> 
-        group_by(fecha, id_mun) |> 
-        arrange(desc(votos)) |> 
-        mutate(ranking = row_number()) |> 
-        filter(ranking == 1 & siglas == partido_primero) |> 
-        left_join(
-          election_data |> 
-            group_by(fecha, id_mun) |> 
-            arrange(desc(votos)) |> 
-            mutate(ranking = row_number()) |> 
-            filter(ranking == 2) |> 
-            select(fecha, id_mun, siglas_segundo = siglas, votos_segundo = votos),
-          by = c("fecha", "id_mun")
-        ) |> 
-        select(fecha, id_mun,siglas_primero = siglas, votos_primero = votos, 
-               siglas_segundo, votos_segundo)}
-
->>>>>>>> Stashed changes:.Rproj.user/F209219B/sources/session-a1455f30/F287057B-contents
     # Uso de la función
     resultado_PSOE <- obtener_segundo_partido(election_data, "PSOE")
     resultado_PP <- obtener_segundo_partido(election_data, "PP")
@@ -492,34 +451,25 @@ En general, las dos muestras se posicionan bastante iguales entre sí, o eso es 
 
     # Calcular el error absoluto
     elecciones_encuestas <- elecciones_encuestas |> 
-<<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-d11abd29/F287057B-contents
-      mutate(error_absoluto = abs(total_votos - puntuacion * total_votantes / 100),
-             error_relativo = error_absoluto / total_votantes)
-========
       mutate(error_absoluto = abs(total_votos - puntuacion * total_votantes / 100))
->>>>>>>> Stashed changes:.Rproj.user/F209219B/sources/session-a1455f30/F287057B-contents
     ```
 
 -   ¿Qué casas encuestadoras acertaron más y cuáles se desviaron más de los resultados?
 
 ```{r}
-# Agrupar por pollster y calcular el error absoluto total
+# Agrupar por pollster y sumar el error absoluto
+
 pollster_error <- elecciones_encuestas |> 
   group_by(id_pollster, pollster) |> 
-  summarize(
-    total_error = sum(error_absoluto, na.rm = TRUE),
-    .groups = "drop"
-  )
+  summarize(total_error = sum(error_absoluto, na.rm = TRUE), .groups = "drop") |> ungroup()
 
-# Obtener los 5 pollsters con menor error absoluto
-top_5_menor_error <- pollster_error |> 
-  arrange(total_error) |>   # Ordenar por error ascendente
-  slice_head(n = 5)  # Seleccionar las primeras 5 filas
+# Encontrar el pollster con el menor error
+pollster_min_error <- pollster_error |> 
+  filter(total_error == min(total_error))
 
-# Obtener los 5 pollsters con mayor error absoluto
-top_5_mayor_error <- pollster_error |> 
-  arrange(desc(total_error)) |>  # Ordenar por error descendente
-  slice_head(n = 5)  # Seleccionar las primeras 5 filas
+# Encontrar el pollster con el mayor error
+pollster_max_error <- pollster_error |> 
+  filter(total_error == max(total_error))
 ```
 
 Debes incluir [**al menos 3 preguntas "originales" más**]{.hl-orange} que consideres interesantes de responder utilizando los datos.

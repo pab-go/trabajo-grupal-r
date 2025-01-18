@@ -1,20 +1,17 @@
 ---
 title: "Entrega grupal"
-author: "Pablo Gómez (DNI: 03214857D),                                                                                               Wenxiang Xia (DNI: X2726507C),                                                                                               Javier Figueiredo Tor (DNI: 06341629T),
-        Cyan Morales (DNI: 02780780B) "
+author: "Pablo Gómez (DNI:03214857D),                                                                                                Wenxiang Xia (DNI:X2726507C),
+        Javier Figueiredo Tor (DNI:06341629T),
+        Cyan Morales (DNI:02780780B)"
 format:
   revealjs:
-    theme: [style.scss] 
+    theme: [style.scss]
     embed-resources: true
 execute:
   echo: true
 ---
 
-------------------------------------------------------------------------
----------------------------------
 ## Paquetes necesarios
-> Insertad aquí todos los paquetes vayáis necesitando
-
 ```{r}
 rm(list = ls())
 library(tidyverse)
@@ -124,7 +121,7 @@ Además de lo que consideres oportuno realizar, los siguientes elementos son obl
       mutate(across(where(is.logical), as.numeric))
     ```
 
----
+
 
 2.  Debes incluir al menos un join entre tablas.
 
@@ -145,7 +142,7 @@ election_data <-
 surveys <- surveys |> select(-type_survey)
 ```
 
----
+
 4.  Los paquetes `{glue}`, `{forcats}` y `{lubridate}` deben ser utilizados en algún punto
 
 5.  Los siguientes elementos deben usarse al menos una vez: mutate, summarise, group_by (o su equivalente), case_when
@@ -263,7 +260,7 @@ ganadores
 
 ```
 
----
+
 
 -   ¿Qué partido fue el segundo cuando el primero fue el PSOE? ¿Y cuando el primero fue el PP?
 
@@ -311,7 +308,7 @@ ganadores
     resultado_PP <- obtener_segundo_partido(election_data, "PP")
     ```
 
----
+
 
 -   ¿A quién beneficia la baja participación?
 
@@ -382,7 +379,7 @@ ggplot(election_data_rcs, aes(x = censo, y = participacion)) +
 
 ```
 
----
+
 
 ```{r}
 
@@ -486,7 +483,7 @@ NO obstante, eso no significa que haya individuos específicos que se salgan del
       mutate(error_absoluto = abs(total_votos - puntuacion * total_votantes / 100))
     ```
 
----
+
 
 -   ¿Qué casas encuestadoras acertaron más y cuáles se desviaron más de los resultados?
 
@@ -605,7 +602,6 @@ plt1
 ```
 
 
----
 
 
 ¿Y los bloques?
@@ -668,7 +664,7 @@ ggplot(resultados_porcentajes2, aes(fill = Grupo, values = porcentaje))+
 
 ```
 
----
+
 
 ```{r}
 # Crear una clasificación de municipios: Urbano o Rural

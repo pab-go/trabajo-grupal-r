@@ -408,7 +408,7 @@ barras_rural <- ggplot(votos_por_zona2) +
         legend.position = "none",
         plot.title = element_markdown(
         family = "Econ Sans Cnd", 
-        size = 15))+
+        size = 15,face="bold"))+
         labs(title = "Diferencia en porcentaje en zonas rurales y urbanas y anómalos",y="diferencia")
 
 #GRAFICO CAJAS Y BIGOTES PARA LOS ANOMALOS

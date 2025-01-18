@@ -494,27 +494,36 @@ bigotes_rural <-ggplot(votos_por_zona2) +
 
     # Calcular el error absoluto
     elecciones_encuestas <- elecciones_encuestas |> 
+<<<<<<< Updated upstream
       mutate(votos_estimados_censo = puntuacion / 100 * censo,
     error_absoluto = abs(votos_estimados_censo - votos)
       ) 
+=======
+      mutate(error_absoluto = abs(total_votos - puntuacion * total_votantes / 100),
+             error_relativo = error_absoluto / total_votantes)
+>>>>>>> Stashed changes
     ```
 
 -   ¿Qué casas encuestadoras acertaron más y cuáles se desviaron más de los resultados?
 
 ```{r}
-# Agrupar por pollster y sumar el error absoluto
-
+# Agrupar por pollster y calcular el error absoluto total
 pollster_error <- elecciones_encuestas |> 
   group_by(id_pollster, pollster) |> 
-  summarize(total_error = sum(error_absoluto, na.rm = TRUE), .groups = "drop") |> ungroup()
+  summarize(
+    total_error = sum(error_absoluto, na.rm = TRUE),
+    .groups = "drop"
+  )
 
-# Encontrar el pollster con el menor error
-pollster_min_error <- pollster_error |> 
-  filter(total_error == min(total_error))
+# Obtener los 5 pollsters con menor error absoluto
+top_5_menor_error <- pollster_error |> 
+  arrange(total_error) |>   # Ordenar por error ascendente
+  slice_head(n = 5)  # Seleccionar las primeras 5 filas
 
-# Encontrar el pollster con el mayor error
-pollster_max_error <- pollster_error |> 
-  filter(total_error == max(total_error))
+# Obtener los 5 pollsters con mayor error absoluto
+top_5_mayor_error <- pollster_error |> 
+  arrange(desc(total_error)) |>  # Ordenar por error descendente
+  slice_head(n = 5)  # Seleccionar las primeras 5 filas
 ```
 
 Debes incluir [**al menos 3 preguntas "originales" más**]{.hl-orange} que consideres interesantes de responder utilizando los datos.

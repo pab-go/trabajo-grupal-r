@@ -1,17 +1,21 @@
 ---
 title: "Entrega grupal"
-author: "Pablo Gómez (DNI:03214857D),                                                                                                Wenxiang Xia (DNI:X2726507C),
-        Javier Figueiredo Tor (DNI:06341629T),
-        Cyan Morales (DNI:02780780B)"
+author:
+  - "Pablo Gómez (DNI:03214857D)"
+  - "Wenxiang Xia (DNI:X2726507C)"
+  - "Javier Figueiredo (DNI:06341629T)"
+  - "Cyan Morales (DNI:02780780B)"
 format:
   revealjs:
-    theme: [style.scss]
+    theme:
+      - style.scss
     embed-resources: true
 execute:
   echo: true
 ---
 
 ## Paquetes necesarios
+
 ```{r}
 rm(list = ls())
 library(tidyverse)
@@ -121,8 +125,6 @@ Además de lo que consideres oportuno realizar, los siguientes elementos son obl
       mutate(across(where(is.logical), as.numeric))
     ```
 
-
-
 2.  Debes incluir al menos un join entre tablas.
 
 3.  Recordatorio: información = varianza
@@ -141,7 +143,6 @@ election_data <-
   select(-c(tipo_eleccion, vuelta, codigo_distrito_electoral))
 surveys <- surveys |> select(-type_survey)
 ```
-
 
 4.  Los paquetes `{glue}`, `{forcats}` y `{lubridate}` deben ser utilizados en algún punto
 
@@ -202,8 +203,6 @@ TRUE ~ "OTROS"))
 
 10. Debes usar todos los archivos en algún momento.
 
----
-
 11. Debes descartar las encuestas que:
 
 ```         
@@ -260,12 +259,10 @@ ganadores
 
 ```
 
-
-
 -   ¿Qué partido fue el segundo cuando el primero fue el PSOE? ¿Y cuando el primero fue el PP?
 
     ```{r}
-    
+
     resultado_PSOE <- election_data |> 
       group_by(fecha, id_mun) |> 
       arrange(desc(votos)) |> 
@@ -308,8 +305,6 @@ ganadores
     resultado_PP <- obtener_segundo_partido(election_data, "PP")
     ```
 
-
-
 -   ¿A quién beneficia la baja participación?
 
 ```{r}
@@ -344,7 +339,6 @@ ggplot(corr_participacion, aes(x = reorder(siglas, correlacion), y = correlacion
 
 ```
 
----
 -   ¿Cómo analizar la relación entre censo y voto? ¿Es cierto que determinados partidos ganan en las zonas rurales?
 
 ```{r}
@@ -378,8 +372,6 @@ ggplot(election_data_rcs, aes(x = censo, y = participacion)) +
 
 
 ```
-
-
 
 ```{r}
 
@@ -444,8 +436,7 @@ bigotes_rural <-ggplot(votos_por_zona2) +
 
 ```
 
-En general, las dos muestras se posicionan bastante iguales entre sí, o eso es lo que nos indica el p-valor.
-NO obstante, eso no significa que haya individuos específicos que se salgan del promedio. Estos son PP,Psoe,CIudadanos y UP.
+En general, las dos muestras se posicionan bastante iguales entre sí, o eso es lo que nos indica el p-valor. NO obstante, eso no significa que haya individuos específicos que se salgan del promedio. Estos son PP,Psoe,CIudadanos y UP.
 
 ------------------------------------------------------------------------
 
@@ -483,8 +474,6 @@ NO obstante, eso no significa que haya individuos específicos que se salgan del
       mutate(error_absoluto = abs(total_votos - puntuacion * total_votantes / 100))
     ```
 
-
-
 -   ¿Qué casas encuestadoras acertaron más y cuáles se desviaron más de los resultados?
 
 ```{r}
@@ -503,7 +492,6 @@ pollster_max_error <- pollster_error |>
   filter(total_error == max(total_error))
 ```
 
----
 Debes incluir [**al menos 3 preguntas "originales" más**]{.hl-orange} que consideres interesantes de responder utilizando los datos.
 
 ¿Ha subido el peso de los grandes partidos, de los partidos nacionalistas y de los partidos nuevos a lo largo del tiempo?
@@ -601,10 +589,8 @@ plt1
 
 ```
 
-
-
-
 ¿Y los bloques?
+
 ```{r}
 
 resultados_porcentajes2 <- election_data |> 
@@ -663,8 +649,6 @@ ggplot(resultados_porcentajes2, aes(fill = Grupo, values = porcentaje))+
   )
 
 ```
-
-
 
 ```{r}
 # Crear una clasificación de municipios: Urbano o Rural

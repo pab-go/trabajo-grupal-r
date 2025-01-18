@@ -327,27 +327,43 @@ ggplot(corr_participacion, aes(x = reorder(siglas, correlacion), y = correlacion
 election_data_rcs <- election_data |> 
     mutate("participacion" = 100*(votos_candidaturas + votos_blancos + votos_nulos) / censo,) |> summarise(participacion=mean(participacion),
           censo=mean(censo), .by = id_mun)
+
+calcular_limites <- function(datos, col) {
+  Q1 <- quantile(datos[[col]], 0.25)
+  Q3 <- quantile(datos[[col]], 0.75)
+  IQR <- Q3 - Q1
+  lim_inf <- Q1 - (IQR * 1.5)
+  lim_sup <- Q3 + (IQR * 31.5)
+  
+  datos <- datos |> 
+  filter(censo >= lim_inf & censo <= lim_sup)
+  return(datos)
+}
+
+election_data_rcs <- calcular_limites(election_data_rcs, "censo")
 # HAGO UN CONTRASTE NO PARAMETRICO CON LA HIPÓTESIS NULA DE INDEPENDENCIA
 cor.test(election_data_rcs$participacion, election_data_rcs$censo, method = "kendall")
 cor.test(election_data_rcs$participacion, election_data_rcs$censo, method = "spearman")
+
 ##GRAFICO RELACION CENSO Y VOTO PARA VER LO CONTRASTADO
 ggplot(election_data_rcs, aes(x = censo, y = participacion)) +
   geom_point(aes(color = participacion), size = 3, alpha = 0.7) +  # Puntos de dispersión
-  geom_smooth(method = "lm", color = "blue", se = TRUE, linetype = "dashed") +  # Línea de regresión
-  scale_color_gradient(low = "yellow", high = "red", name = "Participación (%)") +  # Gradiente de color
+  geom_smooth(method = "lm", color = "black", se = TRUE, linetype = "dashed") +  # Línea de regresión
+  scale_color_gradient(low = "#C0FF3E", high = "olivedrab", name = "Participación (%)")+
   labs(
     title = "Relación entre Censo y Participación",
-    subtitle = "Datos simulados de participación electoral",
-    x = "Censo (número de votantes)",
-    y = "Participación (%)",
+    x = "Censo",
+    y = "Participación (%)"
   ) +
   theme_minimal(base_size = 14) +  # Tema minimalista
   theme(
-    plot.title = element_text(face = "bold", size = 12, hjust = 0.5),  # Personalización del título
-    plot.subtitle = element_text(size = 9, hjust = 0.5),
-    axis.title.x = element_text(size = 8),
-    axis.title.y = element_text(size = 8),
-    legend.position = "top"  # Posición de la leyenda
+    plot.title = element_text(face = "bold", size = 20,vjust = 0.6),  # Personalización del título
+    plot.subtitle = element_text(size = 9),
+    axis.title = element_text(size = 14, face = "bold"),
+    legend.position = "right", 
+    legend.text = element_text(size = 10), # Tamaño del texto de la escala
+    legend.title = element_text(size = 12),
+    panel.background = element_rect(fill = "grey95"),
   )
 
 
@@ -374,7 +390,7 @@ wilcox.test(votos_por_zona2$rural, votos_por_zona2$urbana, paired = TRUE)
 
 barras_rural <- ggplot(votos_por_zona2) +
   geom_col(aes(x = fct_reorder(siglas, dif_perc), y= dif_perc,fill=siglas)) +  
-  scale_y_continuous(limits = c(-10, 10)) +  
+  scale_y_continuous(limits = c(-6, 6)) +  
   scale_fill_manual(values= c(CS = "orange",
                               UP = "purple", 
                               VOX = "green",
@@ -389,13 +405,16 @@ barras_rural <- ggplot(votos_por_zona2) +
                               PP="blue"))+
   theme(axis.text.x = element_text(angle = 45, hjust = 1),
         axis.title.x = element_blank(),
-        legend.position = "none")+
-  labs(title = "Diferencia en porcentaje en zonas rurales y urbanas y anómalos",y="diferencia")
+        legend.position = "none",
+        plot.title = element_markdown(
+        family = "Econ Sans Cnd", 
+        size = 15))+
+        labs(title = "Diferencia en porcentaje en zonas rurales y urbanas y anómalos",y="diferencia")
 
 #GRAFICO CAJAS Y BIGOTES PARA LOS ANOMALOS
 bigotes_rural <-ggplot(votos_por_zona2) +
   geom_boxplot(aes(y = dif_perc, fill = "#CDAA7D"), width = 0.4) +  # Una sola caja para toda la variable
-  scale_y_continuous(limits = c(-4, 4)) +  # Ajuste de los límites del eje Y
+  scale_y_continuous(limits = c(-5, 5)) +  # Ajuste de los límites del eje Y
   theme(
     axis.text.x = element_blank(),  # Eliminar el eje X
     axis.ticks.x = element_blank(),  # Eliminar las marcas del eje X
@@ -403,14 +422,8 @@ bigotes_rural <-ggplot(votos_por_zona2) +
     axis.line.x = element_blank(),
     axis.title.y = element_blank(),
     legend.position = "none",
-     theme(
-    margin = margin(20, 20, 20, 0),
-    plot.title = element_markdown(
-      family = "Econ Sans Cnd", 
-      size = 15
-    )
   )
-  )
+  
  barras_rural+bigotes_rural+ 
   plot_layout(ncol = 2, widths = c(2.75, 1.25))
 
@@ -478,7 +491,7 @@ Debes incluir [**al menos 3 preguntas "originales" más**]{.hl-orange} que consi
 
 ```{r}
  
-#PAso 1: PArticipación por elección
+#PAso 1: Porcentaje de votos a cada partido por elección
 election_data <- election_data |> mutate("participacion" = (votos_candidaturas + votos_blancos + votos_nulos))
 participacion2 <- election_data |>
    group_by(fecha, id_mun) |>  # Agrupar por elección y municipio
@@ -495,29 +508,21 @@ resultados_porcentajes <- election_data |>
       str_detect(siglas, "PNV|BNG|ERC|BILDU|CONVERGÈNCIA I UNIÓ") ~ "NACIONALISTA/REGIONALISTA",
       TRUE ~ "OTROS"
     )
-  ) |> 
-  summarise(
-    n_votos = sum(votos, na.rm = TRUE),   # Total de votos del grupo por elección
-    .by = c(fecha,Grupo)
-  ) |> 
-  left_join(participacion2, by = "fecha") |>  # Añadir el censo total por elección
+  )
+  resultados_porcentajes <- resultados_porcentajes |> summarise(n_votos = sum(votos), .by = c(fecha,Grupo)) |> 
+  left_join(participacion2, by = "fecha")|>  # Añadir el censo total por elección
   mutate(
     porcentaje = (n_votos / partic_por_elec) * 100  # Calcular porcentaje sobre el censo total
   )
 
 plt1 <- ggplot(resultados_porcentajes, aes(fecha, porcentaje)) +
   geom_line(aes(color = Grupo,size= 1.2)) +
-  geom_point(
-    aes(fill = Grupo), 
-    size = 5, 
-    pch = 21, # Type of point that allows us to have both color (border) and fill.
+  geom_point(aes(fill = Grupo),  size = 5, pch = 21, #pch te permite tener color y borde, son ese tipo de puntos
     color = "white", 
-    stroke = 1 # The width of the border, i.e. stroke.
+    stroke = 1 #el ancho del borde
   ) +
  scale_color_manual(values = c("#076FA1", "#2FC1D3", "#AD8C97","#C7C9CB")) +
   scale_fill_manual(values = c("#076FA1", "#2FC1D3", "#AD8C97","#C7C9CB")) + 
-   theme_minimal()+
-  theme(legend.position = "right")+
   scale_x_date(
     breaks = unique(resultados_porcentajes$fecha),   # Usar solo las fechas específicas
     date_labels = "%Y-%b"           
@@ -525,45 +530,23 @@ plt1 <- ggplot(resultados_porcentajes, aes(fecha, porcentaje)) +
   scale_y_continuous(
     breaks = seq(0, 100, by = 5),  # Intervalos de 5 unidades en el eje Y
     limits = c(0, 100))+
+  theme_minimal()+
+  theme(legend.position = "right")+
   theme(
-    # Set background color to white
-    panel.background = element_rect(fill = "white"),
-    # Remove all grid lines
-    panel.grid = element_blank(),
-    # But add grid lines for the vertical axis, customizing color and size 
-    panel.grid.major.y = element_line(color = "#A8BAC4", size = 0.3),
-    # Remove tick marks on the vertical axis by setting their length to 0
-    axis.ticks.length.y = unit(0, "mm"), 
-    # But keep tick marks on horizontal axis
-    axis.ticks.length.x = unit(2, "mm"),
-    # Remove the title for both axes
-    axis.title = element_text(size = 11, face = "bold"), # Estilo de títulos de los ejes,
-    # Only the bottom line of the vertical axis is painted in black
-    axis.line.x.bottom = element_line(color = "black"),
-    # Remove labels from the vertical axis
-    axis.text.y = element_text(family = "Econ Sans Cnd", size = 12),
-    # But customize labels for the horizontal axis
-    axis.text.x = element_text(family = "Econ Sans Cnd", size = 10,angle = 40)
+    panel.background = element_rect(fill = "grey95"),#Colores de fondo para el panel y el gráfico
+    plot.background = element_rect(fill = "grey95"),
+    panel.grid = element_blank(), #Quitar las cuadrículas
+    panel.grid.major.y = element_line(color = "#A8BAC4", size = 0.2), #Añadirlas de nuevo al eje y
+    axis.ticks.length.y = unit(0, "mm"), #Quitar las marcas del eje y
+    axis.ticks.length.x = unit(2, "mm"), #Dejarlas muy pequeñas en el eje x
+    axis.title = element_text(size = 14, face = "bold"), # Estilo de títulos de los ejes,
+    axis.line.x.bottom = element_line(color = "black"), #línea de abajo negra
+    axis.text.y = element_text(family = "Econ Sans Cnd", size = 11), #customizar los ejes
+    axis.text.x = element_text(family = "Econ Sans Cnd", size = 11,angle = 37,margin = margin(1.75, 0,0,0,"mm")),
+    plot.title = element_markdown(family = "Econ Sans Cnd", size = 17,face = "bold", margin = margin(5,0,5,0))
   )+
     guides(size = "none")+
-  labs(
-    title = "Evolución del porcentaje de votos por grupo",
-    x = "Fecha de la elección",
-    y = "Porcentaje de votos (%)"
-  )
-
-# Añadir título estilizado
-plt1 <- plt1 +
-  labs(
-    title = "Evolución de grupos políticos: % de votos"
-  ) + 
-  theme(
-    margin = margin(20, 20, 20, 0),
-    plot.title = element_markdown(
-      family = "Econ Sans Cnd", 
-      size = 15
-    )
-  )
+  labs(title = "Evolución de los votos por grupos (%)")
 
 plt1
 
@@ -614,19 +597,18 @@ ggplot(resultados_porcentajes2, aes(fill = Grupo, values = porcentaje))+
     title="Evolución del reparto del congreso por grupos",
   )+
   # Mostrar la leyenda
-  guides(fill = guide_legend(color="white",label.theme = element_text(color = "white"))) +
+  guides(fill = guide_legend(color="white",title=NULL, label.theme = element_text(color = "white",margin = margin(0,5,0,5)))) +
   scale_fill_manual(values=c(
     "DERECHAS" = "#56B4E9",
-    "IZQUIERDAS" = "#CC79A7",
+    "IZQUIERDAS" = "#EE3B3B",
     "CENTRO" = "#E69F00",
     "NACIONALISTA/REGIONALISTA" = "#009E73",
     "OTROS" = "#999999"))+
   theme_void()+
   theme(
     plot.background = element_rect(fill="#222725"),
-    plot.title = element_markdown(size=18,family='sta',margin=margin(20,0,10,0),color='white'),
-    strip.text = element_markdown(hjust=0.1,size=15,family='ral',angle=90,lineheight = 0.45,color='white')
-  )
+    plot.title = element_markdown(size=18,family='sta',margin=margin(20,0,15,0),color='white', face = "bold"),
+    strip.text = element_markdown(hjust=0.5,size=15,family='ral',angle=90,lineheight = 0.45,color='white',margin= margin(0,0,3,10)))
 
 ```
 

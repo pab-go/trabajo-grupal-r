@@ -1,33 +1,20 @@
 ---
 title: "Entrega grupal"
-author: "Pablo Gómez (DNI: 03214857D), Wenxiang Xia (DNI:X7276507C), Javier Figueiredo Tor (DNI:06341629T), Cyan Morales (DNI: 02780780B)"
+author:
+  - "Pablo Gómez (DNI:03214857D)"
+  - "Wenxiang Xia (DNI:X2726507C)"
+  - "Javier Figueiredo (DNI:06341629T)"
+  - "Cyan Morales (DNI:02780780B)"
 format:
   revealjs:
-    theme: [style.scss]
+    theme:
+      - style.scss
     embed-resources: true
-execute: 
+execute:
   echo: true
 ---
 
-## Instrucciones
-
--   Modificad dentro del documento .qmd vuestros datos personales (nombre y DNI) que se encuentran en el encabezado del archivo.
-
--   Aseguraos de que el archivo .qmd se renderice correctamente ANTES de continuar editando el documento y que el archivo .html correspondiente se genere en tu carpeta local en el ordenador.
-
-------------------------------------------------------------------------
-
-## Instrucciones
-
--   Los bloques de código (chunks) creados están vacíos o incompletos. Una vez que edites lo que consideres necesario, debes cambiar cada bloque a #\| eval: true (o eliminarlo directamente) para que se ejecuten.
-
--   Recuerda que puedes ejecutar los bloques de código uno por uno con el botón play o ejecutar todos los bloques hasta un bloque específico (con el botón situado a la izquierda del anterior).
-
-------------------------------------------------------------------------
-
 ## Paquetes necesarios
-
-> Insertad aquí todos los paquetes vayáis necesitando
 
 ```{r}
 rm(list = ls())
@@ -38,6 +25,12 @@ library(ggplot2)
 library(lubridate)
 library(forcats)
 library(patchwork)
+library(ggtext) 
+library(ggnewscale) 
+library(waffle)
+library(camcorder)
+library(showtext)
+
 ```
 
 ------------------------------------------------------------------------
@@ -143,8 +136,7 @@ cod_mun_dist <- cod_mun |> summarise(across(everything(), n_distinct))
 surveys_dist <- surveys |> summarise(across(everything(), n_distinct))
 abbrev_dist <- abbrev |> summarise(across(everything(), n_distinct)) 
 
-# en tres (tipo_eleccion, vuelta, codigo_distrito_electoral) tenemos 
-# un solo valor cte --> no nos aporta nada
+# Eliminamos las columnas en las que su valor es el mismo siempre
 
 election_data <-
   election_data |> 
@@ -173,8 +165,6 @@ surveys <- surveys |> select(-type_survey)
 
 ------------------------------------------------------------------------
 
-## Ítems obligatorios
-
 7.  Contamos con muchos partidos que se presentan a las elecciones. Solo nos interesarán los siguientes partidos:
 
 -   UNIDAS PODEMOS - IU (atención: aquí han tenido varios nombres - IU, Podem, Ezker Batua, ... - y no siempre se han presentado juntos, pero aquí los analizaremos como un conjunto).
@@ -200,7 +190,6 @@ str_detect(partidos, "MÁS PAÍS|MAS PAIS|MÁS PAIS|MAS PAÍS") ~ "MP",
 str_detect(partidos, "VOX") ~ "VOX",
 str_detect(partidos,"CONVERGÈNCIA I UNIÓ")~"CONVERGÈNCIA I UNIÓ",
 TRUE ~ "OTROS"))
-
 
 ```
 
@@ -243,13 +232,13 @@ surveys <- surveys |>
 
 ```{r}
 
-# Transformar los datos y generar identificadores
+# Creo un identificador único por municipio y por elección
 election_data <- election_data |> 
   mutate(
     id_mun = (glue("{codigo_ccaa}-{codigo_provincia}-{codigo_municipio}")),
     fecha = (as_date(glue("{anno}-{mes}-01")))
   )  |> 
-  select(-anno, -mes, -codigo_ccaa, -codigo_provincia, -codigo_municipio) |> 
+  select(-c(anno,mes,codigo_ccaa,codigo_provincia,codigo_municipio)) |> 
   select(fecha, id_mun, everything())
 
 # Filtrar municipios con más de 100,000 habitantes
@@ -259,20 +248,21 @@ ganadores <- election_data |>
   group_by(id_mun, fecha) |> 
   slice_max(order_by = votos, n = 1) |>  # Máximo voto por grupo
   ungroup() |>
-  select(id_mun, fecha, siglas, votos)
-# Mostrar los resultados
-print(ganadores)
+  select(id_mun, fecha, siglas, votos,censo)
+
 
 #Inner join para saber el nombre del municipio
 ganadores <- ganadores |> 
   inner_join(cod_mun, by = c("id_mun"="cod_mun"))
 
+ganadores
 
 ```
 
 -   ¿Qué partido fue el segundo cuando el primero fue el PSOE? ¿Y cuando el primero fue el PP?
 
     ```{r}
+
     resultado_PSOE <- election_data |> 
       group_by(fecha, id_mun) |> 
       arrange(desc(votos)) |> 
@@ -292,26 +282,27 @@ ganadores <- ganadores |>
              siglas_primero = siglas, votos_primero = votos, 
              siglas_segundo, votos_segundo)
 
-    #para el ver con el PP solo hace falta cambiar el nombre
+    obtener_segundo_partido <- function(election_data, partido_primero) {
+      election_data |> 
+        group_by(fecha, id_mun) |> 
+        arrange(desc(votos)) |> 
+        mutate(ranking = row_number()) |> 
+        filter(ranking == 1 & siglas == partido_primero) |> 
+        left_join(
+          election_data |> 
+            group_by(fecha, id_mun) |> 
+            arrange(desc(votos)) |> 
+            mutate(ranking = row_number()) |> 
+            filter(ranking == 2) |> 
+            select(fecha, id_mun, siglas_segundo = siglas, votos_segundo = votos),
+          by = c("fecha", "id_mun")
+        ) |> 
+        select(fecha, id_mun,siglas_primero = siglas, votos_primero = votos, 
+               siglas_segundo, votos_segundo)}
 
-    resultado_PP <- election_data |> 
-      group_by(fecha, id_mun) |> 
-      arrange(desc(votos)) |> 
-      mutate(ranking = row_number()) |> 
-      filter(ranking == 1 & siglas == "PP") |> 
-    # Hacer un join con los datos del segundo partido más votado en los mismos grupos
-      left_join(
-        election_data |> 
-          group_by(fecha, id_mun) |> 
-          arrange(desc(votos)) |> 
-          mutate(ranking = row_number()) |> 
-          filter(ranking == 2) |> 
-          select(fecha, id_mun, siglas_segundo = siglas, votos_segundo = votos),
-        by = c("fecha", "id_mun")
-      ) |> 
-      select(fecha, id_mun, censo, participacion_1, participacion_2, 
-             siglas_primero = siglas, votos_primero = votos, 
-             siglas_segundo, votos_segundo)
+    # Uso de la función
+    resultado_PSOE <- obtener_segundo_partido(election_data, "PSOE")
+    resultado_PP <- obtener_segundo_partido(election_data, "PP")
     ```
 
 -   ¿A quién beneficia la baja participación?
@@ -352,13 +343,14 @@ ggplot(corr_participacion, aes(x = reorder(siglas, correlacion), y = correlacion
 
 ```{r}
 
-
+#MEdia de participación en cada municipio
 election_data_rcs <- election_data |> 
     mutate("participacion" = 100*(votos_candidaturas + votos_blancos + votos_nulos) / censo,) |> summarise(participacion=mean(participacion),
           censo=mean(censo), .by = id_mun)
-
-
-##GRAFICO RELACION CENSO Y VOTO
+# HAGO UN CONTRASTE NO PARAMETRICO CON LA HIPÓTESIS NULA DE INDEPENDENCIA
+cor.test(election_data_rcs$participacion, election_data_rcs$censo, method = "kendall")
+cor.test(election_data_rcs$participacion, election_data_rcs$censo, method = "spearman")
+##GRAFICO RELACION CENSO Y VOTO PARA VER LO CONTRASTADO
 ggplot(election_data_rcs, aes(x = censo, y = participacion)) +
   geom_point(aes(color = participacion), size = 3, alpha = 0.7) +  # Puntos de dispersión
   geom_smooth(method = "lm", color = "blue", se = TRUE, linetype = "dashed") +  # Línea de regresión
@@ -379,55 +371,6 @@ ggplot(election_data_rcs, aes(x = censo, y = participacion)) +
   )
 
 
-
-
-# Crear grupos de censo con case_when
-datos_grupos <- election_data_rcs |> 
-  mutate(
-  grupo_censo = case_when(
-    censo <= 500 ~ "1: ≤500",                       # Primeros 3 rangos más pequeños
-    censo > 500 & censo <= 2500 ~ "2: 500-2.5",
-    censo > 2500 & censo <= 4000 ~ "3: 2.5k-4k",
-    censo > 4000 & censo <= 7500 ~ "4: 4k-7.5k",    # Intermedios más finos
-    censo > 7500 & censo <= 10000 ~ "5: 7.5k-10k",
-    censo > 10000 & censo <= 15000 ~ "6: 10k-15k",
-    censo > 15000 & censo <= 20000 ~ "7: 15k-20k",
-    censo > 20000 & censo <= 30000 ~ "8: 20k-30k",  # Más granularidad en intermedios
-    censo > 30000 & censo <= 50000 ~ "9: 30k-50k",
-    censo > 50000 & censo <= 75000 ~ "10: 50k-75k",
-    censo > 75000 & censo <= 100000 ~ "11: 75k-100k",
-    censo > 100000 & censo <= 150000 ~ "12: 100k-150k", # Rango más amplio en superiores
-    censo > 150000 & censo <= 250000 ~ "13: 150k-250k",
-    censo > 250000 & censo <= 500000 ~ "14: 250k-500k",
-    censo > 500000 ~ "15: >500k"
-  )
-)|> 
-  group_by(grupo_censo) |> 
-  summarise(
-    participacion_media = median(participacion, na.rm = TRUE), # Media de participación
-    participacion_sd = sd(participacion, na.rm = TRUE),     # Desviación estándar
-    censo_medio = median(censo, na.rm = TRUE),                # Tamaño medio del censo en cada grupo
-    n_municipios = n()                                      # Número de municipios en el grupo
-  )
-
-# Visualizar los grupos
-print(datos_grupos)
-
-# Crear una regresión lineal sobre los puntos calculados
-modelo <- lm(participacion_media ~ censo_medio, data = datos_grupos)
-summary(modelo)
-
-# Gráfico de la relación (simplificado con menos puntos)
-ggplot(datos_grupos, aes(x = censo_medio, y = participacion_media)) +
-  geom_point(aes(size = n_municipios), color = "steelblue") +  # Tamaño proporcional al número de municipios
-  geom_smooth(method = "lm", color = "red", se = TRUE) +       # Línea de regresión lineal
-  labs(
-    title = "Relación entre Censo Medio y Participación Media por Grupo",
-    x = "Censo Medio por Grupo",
-    y = "Participación Media (%)"
-  ) +
-  theme_minimal()
-
 ```
 
 ```{r}
@@ -435,43 +378,65 @@ ggplot(datos_grupos, aes(x = censo_medio, y = participacion_media)) +
 # Seleccionar el partido ganador por municipio y clasificar por zona
 election_data <- election_data |> 
   mutate(
-    zona = if_else(censo <= 2500, "Rural", "Urbana")                      # Clasificación por zona
+    zona = if_else(censo <= 10000, "Rural", "Urbana") 
+
   ) 
 
 votos_por_zona <- election_data |> summarise(votos=sum(votos), .by = c(zona,siglas))
 
 votos_por_zona2 <- votos_por_zona |> pivot_wider(names_from = zona, values_from = votos) |> mutate(rural=(Rural/sum(Rural))*100, urbana=(Urbana/sum(Urbana))*100, dif_perc=rural-urbana) 
+
 #TEst de wilcoxon-MAnWhitney
 wilcox.test(votos_por_zona2$rural, votos_por_zona2$urbana, paired = TRUE)
 
 
-#UN gráfico para verlo, aunque no hay muchas diferencias
+#UN gráfico para ver los cambios
 
 barras_rural <- ggplot(votos_por_zona2) +
-  geom_col(aes(x = fct_reorder(siglas, dif_perc), y= dif_perc,fill=siglas)) +  # Colorear las barras
-  scale_y_continuous(limits = c(-35, 35)) +  # Escala en el eje y de -100 a 100
-  scale_fill_manual(values= c(CS = "orange", UP = "purple", VOX = "green",OTROS="grey",MP="#009975",BNG="#6AADE4",PNV="#086522","CONVERGÈNCIA I UNIÓ"="#FFDFC4",ERC="yellow",BILDU="#30D5C8",PSOE="red", PP="blue"))+
+  geom_col(aes(x = fct_reorder(siglas, dif_perc), y= dif_perc,fill=siglas)) +  
+  scale_y_continuous(limits = c(-10, 10)) +  
+  scale_fill_manual(values= c(CS = "orange",
+                              UP = "purple", 
+                              VOX = "green",
+                              OTROS="grey",
+                              MP="#009975",
+                              BNG="#6AADE4",
+                              PNV="#086522",
+                              "CONVERGÈNCIA I UNIÓ"="#FFDFC4",
+                              ERC="yellow",
+                              BILDU="#30D5C8",
+                              PSOE="red", 
+                              PP="blue"))+
   theme(axis.text.x = element_text(angle = 45, hjust = 1),
         axis.title.x = element_blank(),
-        legend.position = "bottom")+
-  labs(x="partidos",y="diferencia")
+        legend.position = "none")+
+  labs(title = "Diferencia en porcentaje en zonas rurales y urbanas y anómalos",y="diferencia")
 
+#GRAFICO CAJAS Y BIGOTES PARA LOS ANOMALOS
 bigotes_rural <-ggplot(votos_por_zona2) +
-  geom_boxplot(aes(y = dif_perc, fill = "#CDAA7D"), width = 0.5) +  # Una sola caja para toda la variable
+  geom_boxplot(aes(y = dif_perc, fill = "#CDAA7D"), width = 0.4) +  # Una sola caja para toda la variable
   scale_y_continuous(limits = c(-4, 4)) +  # Ajuste de los límites del eje Y
-  theme_minimal() +  # Estilo minimalista
   theme(
     axis.text.x = element_blank(),  # Eliminar el eje X
     axis.ticks.x = element_blank(),  # Eliminar las marcas del eje X
     axis.title.x = element_blank(),  # Eliminar el título del eje X
     axis.line.x = element_blank(),
     axis.title.y = element_blank(),
-    legend.position = "none"   # Eliminar la línea del eje X
+    legend.position = "none",
+     theme(
+    margin = margin(20, 20, 20, 0),
+    plot.title = element_markdown(
+      family = "Econ Sans Cnd", 
+      size = 15
+    )
+  )
   )
  barras_rural+bigotes_rural+ 
   plot_layout(ncol = 2, widths = c(2.75, 1.25))
 
 ```
+
+En general, las dos muestras se posicionan bastante iguales entre sí, o eso es lo que nos indica el p-valor. NO obstante, eso no significa que haya individuos específicos que se salgan del promedio. Estos son PP,Psoe,CIudadanos y UP.
 
 ------------------------------------------------------------------------
 
@@ -482,48 +447,49 @@ bigotes_rural <-ggplot(votos_por_zona2) +
     ```{r}
     # Creamos una variable en election_data y en surveys que sea la fecha de las elecciones sin el día
     election_data <- election_data |> 
-      mutate(fecha_año_mes = format(fecha, "%Y-%m"),
-             participacion = votos_candidaturas + votos_blancos + votos_nulos)
+      mutate(fecha_año_mes = format(fecha, "%Y-%m"))
 
-    encuestas_filtradas <- surveys |> 
+    surveys <- surveys |> 
       mutate(fecha_año_mes = format(date_elec, "%Y-%m"))
 
+
+    # Calcular el total de votos por partido y el total de votantes por fecha
+    resultados_votos <- election_data |> 
+      group_by(fecha_año_mes) |> 
+      mutate(total_votantes = sum(votos, na.rm = TRUE)) |>   # Calcular total de votantes por fecha
+      ungroup() |> 
+      group_by(fecha_año_mes, siglas) |> 
+      summarize(
+        total_votos = sum(votos, na.rm = TRUE),  # Total de votos por partido
+        total_votantes = first(total_votantes),  # Total de votantes por fecha
+        .groups = "drop"
+      )
+
     # Unir las tablas surveys y election_data por las columnas fecha_año_mes y partido/siglas
-    elecciones_encuestas <- encuestas_filtradas |> 
-      inner_join(election_data, by = c("fecha_año_mes" = "fecha_año_mes", "partido" = "siglas")) |> select(-c(participacion_1,participacion_2,numero_mesas,zona,size,turnout,partidos))
+    elecciones_encuestas <- surveys |> 
+      inner_join(resultados_votos, by = c("fecha_año_mes" = "fecha_año_mes", "partido" = "siglas"))
 
     # Calcular el error absoluto
     elecciones_encuestas <- elecciones_encuestas |> 
-<<<<<<< Updated upstream
-      mutate(votos_estimados_censo = puntuacion / 100 * censo,
-    error_absoluto = abs(votos_estimados_censo - votos)
-      ) 
-=======
-      mutate(error_absoluto = abs(total_votos - puntuacion * total_votantes / 100),
-             error_relativo = error_absoluto / total_votantes)
->>>>>>> Stashed changes
+      mutate(error_absoluto = abs(total_votos - puntuacion * total_votantes / 100))
     ```
 
 -   ¿Qué casas encuestadoras acertaron más y cuáles se desviaron más de los resultados?
 
 ```{r}
-# Agrupar por pollster y calcular el error absoluto total
+# Agrupar por pollster y sumar el error absoluto
+
 pollster_error <- elecciones_encuestas |> 
   group_by(id_pollster, pollster) |> 
-  summarize(
-    total_error = sum(error_absoluto, na.rm = TRUE),
-    .groups = "drop"
-  )
+  summarize(total_error = sum(error_absoluto, na.rm = TRUE), .groups = "drop") |> ungroup()
 
-# Obtener los 5 pollsters con menor error absoluto
-top_5_menor_error <- pollster_error |> 
-  arrange(total_error) |>   # Ordenar por error ascendente
-  slice_head(n = 5)  # Seleccionar las primeras 5 filas
+# Encontrar el pollster con el menor error
+pollster_min_error <- pollster_error |> 
+  filter(total_error == min(total_error))
 
-# Obtener los 5 pollsters con mayor error absoluto
-top_5_mayor_error <- pollster_error |> 
-  arrange(desc(total_error)) |>  # Ordenar por error descendente
-  slice_head(n = 5)  # Seleccionar las primeras 5 filas
+# Encontrar el pollster con el mayor error
+pollster_max_error <- pollster_error |> 
+  filter(total_error == max(total_error))
 ```
 
 Debes incluir [**al menos 3 preguntas "originales" más**]{.hl-orange} que consideres interesantes de responder utilizando los datos.
@@ -532,19 +498,14 @@ Debes incluir [**al menos 3 preguntas "originales" más**]{.hl-orange} que consi
 
 ```{r}
  
-library(ggplot2)
-library(ggtext) # Para usar `element_markdown`
-library(ggnewscale) # Para usar `new_scale_color`
-
-
-# Paso 1: Calcular el censo único por elección
-censo_por_eleccion <- election_data |> 
-  group_by(fecha, id_mun) |>  # Agrupar por elección y municipio
+#PAso 1: PArticipación por elección
+election_data <- election_data |> mutate("participacion" = (votos_candidaturas + votos_blancos + votos_nulos))
+participacion2 <- election_data |>
+   group_by(fecha, id_mun) |>  # Agrupar por elección y municipio
   slice(1)|> 
   ungroup() |> 
-  group_by(fecha) |>  # Agrupar nuevamente por elección
-  summarise(censo_total = sum(participacion, na.rm = TRUE), .groups = "drop")  # Sumar el censo por elección
-
+  summarise(partic_por_elec=sum(participacion), .by = fecha)
+  
 # Paso 2: Agrupar votos por grupo y calcular el porcentaje
 resultados_porcentajes <- election_data |> 
   mutate(
@@ -555,26 +516,17 @@ resultados_porcentajes <- election_data |>
       TRUE ~ "OTROS"
     )
   ) |> 
-  group_by(fecha, Grupo) |> 
   summarise(
     n_votos = sum(votos, na.rm = TRUE),   # Total de votos del grupo por elección
-    .groups = "drop"
+    .by = c(fecha,Grupo)
   ) |> 
-  left_join(censo_por_eleccion, by = "fecha") |>  # Añadir el censo total por elección
+  left_join(participacion2, by = "fecha") |>  # Añadir el censo total por elección
   mutate(
-    porcentaje = (n_votos / censo_total) * 100  # Calcular porcentaje sobre el censo total
+    porcentaje = (n_votos / partic_por_elec) * 100  # Calcular porcentaje sobre el censo total
   )
 
-BROWN <- "#AD8C97"
-BROWN_DARKER <- "#7d3a46"
-GREEN <- "#2FC1D3"
-BLUE <- "#076FA1"
-GREY <- "#C7C9CB"
-GREY_DARKER <- "#5C5B5D"
-RED <- "#E3120B"
-
 plt1 <- ggplot(resultados_porcentajes, aes(fecha, porcentaje)) +
-  geom_line(aes(color = Grupo,size= 1.5)) +
+  geom_line(aes(color = Grupo,size= 1.2)) +
   geom_point(
     aes(fill = Grupo), 
     size = 5, 
@@ -582,16 +534,17 @@ plt1 <- ggplot(resultados_porcentajes, aes(fecha, porcentaje)) +
     color = "white", 
     stroke = 1 # The width of the border, i.e. stroke.
   ) +
- scale_color_manual(values = c(BLUE, GREEN, BROWN,GREY)) +
-  scale_fill_manual(values = c(BLUE, GREEN, BROWN,GREY)) + 
-  theme(legend.position = "bottom")+
+ scale_color_manual(values = c("#076FA1", "#2FC1D3", "#AD8C97","#C7C9CB")) +
+  scale_fill_manual(values = c("#076FA1", "#2FC1D3", "#AD8C97","#C7C9CB")) + 
+   theme_minimal()+
+  theme(legend.position = "right")+
   scale_x_date(
     breaks = unique(resultados_porcentajes$fecha),   # Usar solo las fechas específicas
-    date_labels = "%Y"           # Mostrar solo el año en las etiquetas
+    date_labels = "%Y-%b"           
   ) +
   scale_y_continuous(
     breaks = seq(0, 100, by = 5),  # Intervalos de 5 unidades en el eje Y
-    limits = c(0, 100)  )+
+    limits = c(0, 100))+
   theme(
     # Set background color to white
     panel.background = element_rect(fill = "white"),
@@ -604,19 +557,14 @@ plt1 <- ggplot(resultados_porcentajes, aes(fecha, porcentaje)) +
     # But keep tick marks on horizontal axis
     axis.ticks.length.x = unit(2, "mm"),
     # Remove the title for both axes
-    axis.title = element_blank(),
+    axis.title = element_text(size = 11, face = "bold"), # Estilo de títulos de los ejes,
     # Only the bottom line of the vertical axis is painted in black
     axis.line.x.bottom = element_line(color = "black"),
     # Remove labels from the vertical axis
-    axis.text.y = element_blank(),
+    axis.text.y = element_text(family = "Econ Sans Cnd", size = 12),
     # But customize labels for the horizontal axis
-    axis.text.x = element_text(family = "Econ Sans Cnd", size = 12)
+    axis.text.x = element_text(family = "Econ Sans Cnd", size = 10,angle = 40)
   )+
-  theme_minimal() +
-  theme(
-    axis.title = element_text(size = 11, face = "bold"), # Estilo de títulos de los ejes
-    axis.text = element_text(size = 12)
-  ) + 
     guides(size = "none")+
   labs(
     title = "Evolución del porcentaje de votos por grupo",
@@ -633,30 +581,18 @@ plt1 <- plt1 +
     margin = margin(20, 20, 20, 0),
     plot.title = element_markdown(
       family = "Econ Sans Cnd", 
-      size = 20
+      size = 15
     )
   )
 
-# Mostrar el gráfico
 plt1
 
-
-
 ```
-
 
 ¿Y los bloques?
 
 ```{r}
-# Paso 1: Calcular el censo único por elección
-censo_por_eleccion <- election_data |> 
-  group_by(fecha, id_mun) |>  # Agrupar por elección y municipio
-  slice(1)|> 
-  ungroup() |> 
-  group_by(fecha) |>  # Agrupar nuevamente por elección
-  summarise(censo_total = sum(participacion, na.rm = TRUE), .groups = "drop")  # Sumar el censo por elección
 
-# Paso 2: Agrupar votos por grupo y calcular el porcentaje
 resultados_porcentajes2 <- election_data |> 
   mutate(
     Grupo = case_when(
@@ -667,107 +603,52 @@ resultados_porcentajes2 <- election_data |>
       TRUE ~ "OTROS"
     )
   ) |> 
-  group_by(fecha, Grupo) |> 
   summarise(
     n_votos = sum(votos, na.rm = TRUE),   # Total de votos del grupo por elección
-    .groups = "drop"
+    .by = c(fecha,Grupo)
   ) |> 
-  left_join(censo_por_eleccion, by = "fecha") |>  # Añadir el censo total por elección
+  left_join(participacion2, by = "fecha") |>  # Añadir el censo total por elección
   mutate(
-    porcentaje = (n_votos / censo_total) * 100  # Calcular porcentaje sobre el censo total
+    porcentaje = (n_votos / partic_por_elec) * 100  # Calcular porcentaje sobre el censo total
   )
-
-
-BROWN <- "#AD8C97"
-YELLOW <- "yellow"
-GREEN <- "#2FC1D3"
-BLUE <- "#076FA1"
-GREY <- "#C7C9CB"
-GREY_DARKER <- "#5C5B5D"
-RED <- "#E3120B"
 
 resultados_porcentajes2 <- resultados_porcentajes2 |> 
-  mutate(Grupo = factor(Grupo, levels = c("OTROS","IZQUIERDAS",  "NACIONALISTA/REGIONALISTA", "CENTRO","DERECHAS")))
+  mutate(Grupo = factor(Grupo, levels = c("DERECHAS", "CENTRO", "IZQUIERDAS", 
+                                          "NACIONALISTA/REGIONALISTA", "OTROS"), ordered = TRUE))|> 
+  arrange(fecha, Grupo) 
 
-plt2 <- ggplot(resultados_porcentajes2, aes(fecha, porcentaje)) +
-  geom_line(aes(color = Grupo, size = 2)) +
-  geom_point(
-    aes(fill = Grupo), 
-    size = 5, 
-    pch = 21, # Type of point that allows us to have both color (border) and fill.
-    color = "white", 
-    stroke = 1 # The width of the border, i.e. stroke.
-  ) +
- scale_color_manual(values = c(BLUE, GREEN, BROWN,GREY,YELLOW)) +
-  scale_fill_manual(values = c(BLUE, GREEN, BROWN,GREY,YELLOW)) + 
-  theme(legend.position = "bottom")+
-  scale_x_date(
-    breaks = unique(resultados_porcentajes$fecha),   # Usar solo las fechas específicas
-    date_labels = "%Y"           # Mostrar solo el año en las etiquetas
-  ) +
-  scale_y_continuous(
-    breaks = seq(0, 100, by = 5),  # Intervalos de 5 unidades en el eje Y
-    limits = c(0, 100)  )+
-  theme(
-    # Set background color to white
-    panel.background = element_rect(fill = "white"),
-    # Remove all grid lines
-    panel.grid = element_blank(),
-    # But add grid lines for the vertical axis, customizing color and size 
-    panel.grid.major.y = element_line(color = "#A8BAC4", size = 0.3),
-    # Remove tick marks on the vertical axis by setting their length to 0
-    axis.ticks.length.y = unit(0, "mm"), 
-    # But keep tick marks on horizontal axis
-    axis.ticks.length.x = unit(2, "mm"),
-    # Remove the title for both axes
-    axis.title = element_blank(),
-    # Only the bottom line of the vertical axis is painted in black
-    axis.line.x.bottom = element_line(color = "black"),
-    # Remove labels from the vertical axis
-    axis.text.y = element_blank(),
-    # But customize labels for the horizontal axis
-    axis.text.x = element_text(family = "Econ Sans Cnd", size = 12)
-  )+
-  theme_minimal() +
-  theme(
-    axis.title = element_text(size = 11, face = "bold"), # Estilo de títulos de los ejes
-    axis.text = element_text(size = 9)                 # Estilo de texto de las marcas de los ejes
-  ) +
-  labs(
-    title = "Evolución del porcentaje de votos por grupo",
-    x = "Fecha de la elección",
-    y = "Porcentaje de votos (%)"
-  )
-
-# Añadir título estilizado
-plt1 <- plt1 +
-  labs(
-    title = "**Evolución de grupos políticos:** % de votos"
-  ) + 
-  theme(
-    plot.title = element_markdown(
-      family = "Econ Sans Cnd", 
-      size = 15
-    )
-  )
-
-plt2
-combined_plot <- (plt1 + plt2) + 
-  plot_layout(guides = "keep") +  # Mantener leyendas separadas
-  plot_annotation(
-    title = "Evolución de grupos del congreso de dos formas distintas", 
-    theme = theme(
-      legend.position = "bottom",
-      plot.title = element_text(size = 16, face = "bold"),  # Un solo título central
-      axis.title.y = element_text(size = 12, face = "bold"), # Un solo eje Y
-      axis.title.x = element_blank() # Ocultar título eje X
-    )
-  )
-combined_plot
 ```
 
+```{r}
 
-¿Existen diferencias significativas en los patrones de votos nulos y blancos entre municipios urbanos y rurales?
+
+font_add_google("Staatliches","sta")
+font_add_google("Raleway","ral")
+showtext_auto()
+
+ggplot(resultados_porcentajes2, aes(fill = Grupo, values = porcentaje))+
+  geom_waffle( n_rows=7, size = 0.15, colour = "white")+
+  facet_wrap(~fecha,ncol=2,strip.position = "left")+
+  coord_equal()+
+  labs(
+    title="Evolución del reparto del congreso por grupos",
+  )+
+  # Mostrar la leyenda
+  guides(fill = guide_legend(color="white",label.theme = element_text(color = "white"))) +
+  scale_fill_manual(values=c(
+    "DERECHAS" = "#56B4E9",
+    "IZQUIERDAS" = "#CC79A7",
+    "CENTRO" = "#E69F00",
+    "NACIONALISTA/REGIONALISTA" = "#009E73",
+    "OTROS" = "#999999"))+
+  theme_void()+
+  theme(
+    plot.background = element_rect(fill="#222725"),
+    plot.title = element_markdown(size=18,family='sta',margin=margin(20,0,10,0),color='white'),
+    strip.text = element_markdown(hjust=0.1,size=15,family='ral',angle=90,lineheight = 0.45,color='white')
+  )
+
+```
 
 ```{r}
 # Crear una clasificación de municipios: Urbano o Rural

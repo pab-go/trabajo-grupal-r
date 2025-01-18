@@ -612,6 +612,8 @@ ggplot(resultados_porcentajes2, aes(fill = Grupo, values = porcentaje))+
 
 ```
 
+¿Existen diferencias significativas en los patrones de votos nulos, blancos y no votados entre municipios urbanos y rurales?
+
 ```{r}
 # Crear una clasificación de municipios: Urbano o Rural
 # Criterio: si el censo es mayor a 10,000, es Urbano; de lo contrario, es Rural
@@ -619,8 +621,10 @@ datos <- election_data |>
   mutate(
     tipo_municipio = ifelse(censo > 10000, "Urbano", "Rural"),
     votos_totales = votos_blancos + votos_nulos + votos_candidaturas, # Calcular total de votos
+    no_votados = censo - votos_totales,
     proporción_nulos = (votos_nulos / votos_totales) * 100,          # Proporción de nulos
-    proporción_blancos = (votos_blancos / votos_totales) * 100       # Proporción de blancos
+    proporción_blancos = (votos_blancos / votos_totales) * 100,       # Proporción de blancos
+    proporción_no_votados = (no_votados / censo) * 100
   )
 
 # Resumen de proporciones por tipo de municipio
@@ -629,18 +633,31 @@ resumen_tipo <- datos |>
   summarise(
     media_nulos = mean(proporción_nulos, na.rm = TRUE),
     media_blancos = mean(proporción_blancos, na.rm = TRUE),
+    media_no_votados = mean(proporción_no_votados, na.rm = TRUE),
     .groups = "drop"
   )
 
 # Visualización de proporciones por tipo de municipio
 resumen_tipo |> 
-  pivot_longer(cols = starts_with("media"), names_to = "tipo_voto", values_to = "proporcion") |> 
+  pivot_longer(
+    cols = starts_with("media"), 
+    names_to = "tipo_voto", 
+    values_to = "proporcion"
+  ) |> 
+  mutate(
+    tipo_voto = factor(tipo_voto, 
+                       levels = c("media_nulos", "media_blancos", "media_no_votados"))  # Fijar el orden
+  ) |> 
   ggplot(aes(x = tipo_municipio, y = proporcion, fill = tipo_voto)) +
   geom_col(position = "dodge") +
-  scale_fill_manual(values = c("media_nulos" = "red", "media_blancos" = "blue"),
-                    labels = c("Votos Nulos", "Votos en Blanco")) +
+  scale_fill_manual(
+    values = c("media_nulos" = "red", 
+               "media_blancos" = "blue", 
+               "media_no_votados" = "green"),
+    labels = c("Votos Nulos", "Votos en Blanco", "No Votados")
+  ) +
   labs(
-    title = "Proporciones de Votos Nulos y Blancos por Tipo de Municipio",
+    title = "Proporciones de Votos Nulos, Blancos y No Votados por Tipo de Municipio",
     x = "Tipo de Municipio",
     y = "Proporción (%)",
     fill = "Tipo de Voto"
@@ -648,23 +665,34 @@ resumen_tipo |>
   theme_minimal()
 
 # Comparación estadística: Test t para diferencias entre Urbano y Rural
-test_nulos <- t.test(proporción_nulos ~ tipo_municipio, data = datos)
-test_blancos <- t.test(proporción_blancos ~ tipo_municipio, data = datos)
+test_nulos <- wilcox.test(proporción_nulos ~ tipo_municipio, data = datos)
+test_blancos <- wilcox.test(proporción_blancos ~ tipo_municipio, data = datos)
+test_no_votados <- wilcox.test(proporción_no_votados ~ tipo_municipio, data = datos)
 
-cat("Resultados del Test t para votos nulos:\n")
+cat("Resultados del test de Wilcoxon para votos nulos:\n")
 print(test_nulos)
 
-cat("\nResultados del Test t para votos en blanco:\n")
+cat("\nResultados del test de Wilcoxon para votos en blanco:\n")
 print(test_blancos)
+
+cat("\nResultados del test de Wilcoxon para no votados:\n")
+print(test_no_votados)
+
 ```
 
 -VOTOS NULOS:
 
-Existe una **diferencia significativa** entre las proporciones de votos nulos en municipios rurales y urbanos. La proporción de votos nulos en los municipios rurales (1.17%) es mayor que en los municipios urbanos (0.97%).
+Hay diferencias significativas en la proporción de votos nulos entre municipios urbanos y rurales. Esto significa que los patrones de votos nulos son diferentes según la clasificación del municipio
 
 -VOTOS BLANCOS:
 
-Existe una **diferencia significativa** entre las proporciones de votos en blanco en municipios rurales y urbanos. Aunque la diferencia es estadísticamente significativa, es **muy pequeña** en términos prácticos: la proporción media de votos en blanco en municipios rurales (0.99%) es ligeramente mayor que en municipios urbanos (0.98%).
+También se observa una diferencia significativa en la proporción de votos en blanco entre municipios urbanos y rurales. Esto indica que los patrones de votos en blanco difieren entre los dos tipos de municipios.
+
+-NO VOTADOS:
+
+Hay una diferencia significativa en la proporción de no votados entre municipios urbanos y rurales. Esto sugiere que el nivel de abstención (personas que no votaron) varía según si el municipio es urbano o rural.
+
+Esto indica que **los patrones de votos nulos, en blanco y no votados son significativamente diferentes entre municipios urbanos y rurales**.
 
 ------------------------------------------------------------------------
 

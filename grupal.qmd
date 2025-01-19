@@ -386,7 +386,7 @@ votos_por_zona <- election_data |> summarise(votos=sum(votos), .by = c(zona,sigl
 votos_por_zona2 <- votos_por_zona |> pivot_wider(names_from = zona, values_from = votos) |> mutate(porc_rural=(Rural/sum(Rural))*100, porc_urbana=(Urbana/sum(Urbana))*100, dif_perc=porc_rural-porc_urbana) 
 
 #Test de wilcoxon-MannWhitney
-wilcox.test(votos_por_zona2$rural, votos_por_zona2$urbana, paired = TRUE)
+wilcox.test(votos_por_zona2$porc_rural, votos_por_zona2$porc_urbana, paired = TRUE)
 
 #Gráfico de barras
 barras_rural <- ggplot(votos_por_zona2) +
@@ -438,50 +438,56 @@ POr ello, al diseñar los dos gráficos se observa que hay 4 datos anómalos que
 
     ```{r}
     # Creamos una variable en election_data y en surveys que sea la fecha de las elecciones sin el día
-    election_data <- election_data |> 
-      mutate(fecha_año_mes = format(fecha, "%Y-%m"))
+election_data <- election_data |> 
+  mutate(fecha_año_mes = format(fecha, "%Y-%m"))
 
-    surveys <- surveys |> 
-      mutate(fecha_año_mes = format(date_elec, "%Y-%m"))
+surveys <- surveys |> 
+  mutate(fecha_año_mes = format(date_elec, "%Y-%m"))
 
 
-    # Calcular el total de votos por partido y el total de votantes por fecha
-    resultados_votos <- election_data |> 
-      group_by(fecha_año_mes) |> 
-      mutate(total_votantes = sum(votos, na.rm = TRUE)) |>   # Calcular total de votantes por fecha
-      ungroup() |> 
-      group_by(fecha_año_mes, siglas) |> 
-      summarize(
-        total_votos = sum(votos, na.rm = TRUE),  # Total de votos por partido
-        total_votantes = first(total_votantes),  # Total de votantes por fecha
-        .groups = "drop"
-      )
+# Calcular el total de votos por partido y el total de votantes por fecha
+resultados_votos <- election_data |> 
+  group_by(fecha_año_mes) |> 
+  mutate(total_votantes = sum(votos, na.rm = TRUE)) |>   # Calcular total de votantes por fecha
+  ungroup() |> 
+  group_by(fecha_año_mes, siglas) |> 
+  summarize(
+    total_votos = sum(votos, na.rm = TRUE),  # Total de votos por partido
+    total_votantes = first(total_votantes),  # Total de votantes por fecha
+    .groups = "drop"
+  )
 
-    # Unir las tablas surveys y election_data por las columnas fecha_año_mes y partido/siglas
-    elecciones_encuestas <- surveys |> 
-      inner_join(resultados_votos, by = c("fecha_año_mes" = "fecha_año_mes", "partido" = "siglas"))
+# Unir las tablas surveys y election_data por las columnas fecha_año_mes y partido/siglas
+elecciones_encuestas <- surveys |> 
+  inner_join(resultados_votos, by = c("fecha_año_mes" = "fecha_año_mes", "partido" = "siglas"))
 
-    # Calcular el error absoluto
-    elecciones_encuestas <- elecciones_encuestas |> 
-      mutate(error_absoluto = abs(total_votos - puntuacion * total_votantes / 100))
+# Calcular el error absoluto y relativo
+elecciones_encuestas <- elecciones_encuestas |> 
+  mutate(error_absoluto = abs(total_votos - puntuacion * total_votantes / 100),
+         error_relativo = error_absoluto /total_votantes)
     ```
 
 -   ¿Qué casas encuestadoras acertaron más y cuáles se desviaron más de los resultados?
 
 ```{r}
-# Agrupar por pollster y sumar el error absoluto
-
+# Agrupar por pollster y calcular el error absoluto total y el error relativo promedio
 pollster_error <- elecciones_encuestas |> 
   group_by(id_pollster, pollster) |> 
-  summarize(total_error = sum(error_absoluto, na.rm = TRUE), .groups = "drop") |> ungroup()
+  summarize(
+    total_error = sum(error_absoluto, na.rm = TRUE),  # Sumar el error absoluto
+    avg_error_relativo = mean(error_relativo, na.rm = TRUE),  # Promedio del error relativo
+    .groups = "drop"
+  )
 
-# Encontrar el pollster con el menor error
-pollster_min_error <- pollster_error |> 
-  filter(total_error == min(total_error))
+# Obtener los 5 pollsters con menor error absoluto
+top_5_menor_error <- pollster_error |> 
+  arrange(total_error) |>   # Ordenar por error absoluto ascendente
+  slice_head(n = 5)  # Seleccionar las primeras 5 filas
 
-# Encontrar el pollster con el mayor error
-pollster_max_error <- pollster_error |> 
-  filter(total_error == max(total_error))
+# Obtener los 5 pollsters con mayor error absoluto
+top_5_mayor_error <- pollster_error |> 
+  arrange(desc(total_error)) |>   # Ordenar por error absoluto descendente
+  slice_head(n = 5)  # Seleccionar las primeras 5 filas
 ```
 
 Debes incluir [**al menos 3 preguntas "originales" más**]{.hl-orange} que consideres interesantes de responder utilizando los datos.

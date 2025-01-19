@@ -1,7 +1,0 @@
-"0","surveys <- surveys |> "
-"0","  filter("
-"0","    as.numeric(format(date_elec, ""%Y"")) >= 2008,  # Elecciones desde 2008 "
-"0","    exit_poll == FALSE,                           # No sean a pie de urna"
-"0","    !is.na(size) & size >= 500,                   # Tamaño muestral conocido y >= 500"
-"0","    field_date_to - field_date_from > 1 # Más de 1 día de trabajo de campo"
-"0","  )"

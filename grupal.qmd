@@ -250,7 +250,6 @@ ganadores <- election_data |>
   ungroup() |>
   select(id_mun, fecha, siglas, votos,censo)
 
-
 #Inner join para saber el nombre del municipio
 ganadores <- ganadores |> 
   inner_join(cod_mun, by = c("id_mun"="cod_mun"))
@@ -258,6 +257,7 @@ ganadores <- ganadores |>
 ganadores
 
 ```
+------------------------------------------------------------------------
 
 -   ¿Qué partido fue el segundo cuando el primero fue el PSOE? ¿Y cuando el primero fue el PP?
 
@@ -285,7 +285,9 @@ ganadores
     resultado_PP <- obtener_segundo_partido(election_data, "PP")
     ```
 
+
 -   ¿A quién beneficia la baja participación?
+
 
 ```{r}
 
@@ -328,7 +330,7 @@ election_data_rcs <- election_data |>
     mutate("participacion" = 100*(votos_candidaturas + votos_blancos + votos_nulos) / censo,) |> summarise(participacion=mean(participacion),
           censo=mean(censo), .by = id_mun)
 
-calcular_limites <- function(datos, col) {
+calcular_anomalos <- function(datos, col) {
   Q1 <- quantile(datos[[col]], 0.25)
   Q3 <- quantile(datos[[col]], 0.75)
   IQR <- Q3 - Q1
@@ -340,12 +342,12 @@ calcular_limites <- function(datos, col) {
   return(datos)
 }
 
-election_data_rcs <- calcular_limites(election_data_rcs, "censo")
+election_data_rcs <- calcular_anomalos(election_data_rcs, "censo")
 # HAGO UN CONTRASTE NO PARAMETRICO CON LA HIPÓTESIS NULA DE INDEPENDENCIA
 cor.test(election_data_rcs$participacion, election_data_rcs$censo, method = "kendall")
 cor.test(election_data_rcs$participacion, election_data_rcs$censo, method = "spearman")
 
-##GRAFICO RELACION CENSO Y VOTO PARA VER LO CONTRASTADO
+##GRÁFICO RELACIÓN CENSO Y VOTO PARA VER LO CONTRASTADO
 ggplot(election_data_rcs, aes(x = censo, y = participacion)) +
   geom_point(aes(color = participacion), size = 3, alpha = 0.7) +  # Puntos de dispersión
   geom_smooth(method = "lm", color = "black", se = TRUE, linetype = "dashed") +  # Línea de regresión
@@ -369,6 +371,8 @@ ggplot(election_data_rcs, aes(x = censo, y = participacion)) +
 
 ```
 
+Una vez hechos los contraste de independencia se observa claramente que hay una relación de dependencia, ya que el p-valor es muy bajo. Además, esa relación también se puede observar visualmente a través del gráfico.
+
 ```{r}
 
 # Seleccionar el partido ganador por municipio y clasificar por zona
@@ -382,15 +386,15 @@ votos_por_zona <- election_data |> summarise(votos=sum(votos), .by = c(zona,sigl
 
 votos_por_zona2 <- votos_por_zona |> pivot_wider(names_from = zona, values_from = votos) |> mutate(rural=(Rural/sum(Rural))*100, urbana=(Urbana/sum(Urbana))*100, dif_perc=rural-urbana) 
 
-#TEst de wilcoxon-MAnWhitney
+#Test de wilcoxon-MannWhitney
 wilcox.test(votos_por_zona2$rural, votos_por_zona2$urbana, paired = TRUE)
 
 
-#UN gráfico para ver los cambios
 
+#Gráfico de barras
 barras_rural <- ggplot(votos_por_zona2) +
   geom_col(aes(x = fct_reorder(siglas, dif_perc), y= dif_perc,fill=siglas)) +  
-  scale_y_continuous(limits = c(-6, 6)) +  
+  scale_y_continuous(limits = c(-5, 5)) +  
   scale_fill_manual(values= c(CS = "orange",
                               UP = "purple", 
                               VOX = "green",
@@ -406,10 +410,8 @@ barras_rural <- ggplot(votos_por_zona2) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1),
         axis.title.x = element_blank(),
         legend.position = "none",
-        plot.title = element_markdown(
-        family = "Econ Sans Cnd", 
-        size = 15,face="bold"))+
-        labs(title = "Diferencia en porcentaje en zonas rurales y urbanas y anómalos",y="diferencia")
+        plot.title = element_markdown(family = "Econ Sans Cnd", size = 13,face="bold"))+
+        labs(title = "Diferencia en porcentaje en zonas rurales y urbanas y anómalos",y="DIFERENCIA (%)")
 
 #GRAFICO CAJAS Y BIGOTES PARA LOS ANOMALOS
 bigotes_rural <-ggplot(votos_por_zona2) +
@@ -419,7 +421,6 @@ bigotes_rural <-ggplot(votos_por_zona2) +
     axis.text.x = element_blank(),  # Eliminar el eje X
     axis.ticks.x = element_blank(),  # Eliminar las marcas del eje X
     axis.title.x = element_blank(),  # Eliminar el título del eje X
-    axis.line.x = element_blank(),
     axis.title.y = element_blank(),
     legend.position = "none",
   )
@@ -429,7 +430,8 @@ bigotes_rural <-ggplot(votos_por_zona2) +
 
 ```
 
-En general, las dos muestras se posicionan bastante iguales entre sí, o eso es lo que nos indica el p-valor. NO obstante, eso no significa que haya individuos específicos que se salgan del promedio. Estos son PP,Psoe,CIudadanos y UP.
+En general, las dos muestras se posicionan de igual manera entre sí, o eso es lo que nos indica el p-valor al hacer el contraste de wilcoxon mann-whitney. NO obstante, eso no significa que haya individuos específicos que se salgan del promedio.
+POr ello, al diseñar los dos gráficos se observa que hay 4 datos anómalos que sí cambian entres poblaciones urbanas y rurales.Estos son PSOE,PP,CS y UP.
 
 ------------------------------------------------------------------------
 
@@ -551,6 +553,7 @@ plt1 <- ggplot(resultados_porcentajes, aes(fecha, porcentaje)) +
 plt1
 
 ```
+A partir del gráfico se ve como a partir de las elecciones de 2015 la irrupción de los partidos nuevos fue notables, perjudicando a los tradicionales. Ahora bien, esa bajada repentina se ha estabilizado con el paso de los años.
 
 ¿Y los bloques?
 
@@ -612,6 +615,8 @@ ggplot(resultados_porcentajes2, aes(fill = Grupo, values = porcentaje))+
 
 ```
 
+Con los bloques políticos se observa cómo la izquierda y la derecha se han ido intercambiando las mayorías a lo largo de los años. También, la entrada del centro en las escena política afectó principalmente a la derecha, pues la izquierda se mantiene igual.
+
 ¿Existen diferencias significativas en los patrones de votos nulos, blancos y no votados entre municipios urbanos y rurales?
 
 ```{r}
@@ -664,7 +669,7 @@ resumen_tipo |>
   ) +
   theme_minimal()
 
-# Comparación estadística: Test t para diferencias entre Urbano y Rural
+# Comparación estadística: Test wilcoxon para diferencias entre Urbano y Rural
 test_nulos <- wilcox.test(proporción_nulos ~ tipo_municipio, data = datos)
 test_blancos <- wilcox.test(proporción_blancos ~ tipo_municipio, data = datos)
 test_no_votados <- wilcox.test(proporción_no_votados ~ tipo_municipio, data = datos)

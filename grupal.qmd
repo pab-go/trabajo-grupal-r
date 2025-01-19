@@ -258,6 +258,11 @@ ganadores <- ganadores |>
 ganadores
 
 ```
+<<<<<<< Updated upstream
+=======
+
+------------------------------------------------------------------------
+>>>>>>> Stashed changes
 
 -   ¿Qué partido fue el segundo cuando el primero fue el PSOE? ¿Y cuando el primero fue el PP?
 
@@ -416,7 +421,11 @@ bigotes_rural <-ggplot(votos_por_zona2) +
 
 ```
 
+<<<<<<< Updated upstream
 En general, las dos muestras se posicionan bastante iguales entre sí, o eso es lo que nos indica el p-valor. NO obstante, eso no significa que haya individuos específicos que se salgan del promedio. Estos son PP,Psoe,CIudadanos y UP.
+=======
+En general, las dos muestras se posicionan de igual manera entre sí, o eso es lo que nos indica el p-valor al hacer el contraste de wilcoxon mann-whitney. NO obstante, eso no significa que haya individuos específicos que se salgan del promedio. POr ello, al diseñar los dos gráficos se observa que hay 4 datos anómalos que sí cambian entres poblaciones urbanas y rurales.Estos son PSOE,PP,CS y UP.
+>>>>>>> Stashed changes
 
 ------------------------------------------------------------------------
 
@@ -451,25 +460,31 @@ En general, las dos muestras se posicionan bastante iguales entre sí, o eso es 
 
     # Calcular el error absoluto
     elecciones_encuestas <- elecciones_encuestas |> 
-      mutate(error_absoluto = abs(total_votos - puntuacion * total_votantes / 100))
+      mutate(error_absoluto = abs(total_votos - puntuacion * total_votantes / 100),
+             error_relativo = error_absoluto / total_votantes)
     ```
 
 -   ¿Qué casas encuestadoras acertaron más y cuáles se desviaron más de los resultados?
 
 ```{r}
-# Agrupar por pollster y sumar el error absoluto
-
+# Agrupar por pollster y calcular el error absoluto total y el error relativo promedio
 pollster_error <- elecciones_encuestas |> 
   group_by(id_pollster, pollster) |> 
-  summarize(total_error = sum(error_absoluto, na.rm = TRUE), .groups = "drop") |> ungroup()
+  summarize(
+    total_error = sum(error_absoluto, na.rm = TRUE),  # Sumar el error absoluto
+    avg_error_relativo = mean(error_relativo, na.rm = TRUE),  # Promedio del error relativo
+    .groups = "drop"
+  )
 
-# Encontrar el pollster con el menor error
-pollster_min_error <- pollster_error |> 
-  filter(total_error == min(total_error))
+# Obtener los 5 pollsters con menor error absoluto
+top_5_menor_error <- pollster_error |> 
+  arrange(total_error) |> #Ordenar por error absoluto ascendente
+  slice_head(n = 5)  # Seleccionar las primeras 5 filas
 
-# Encontrar el pollster con el mayor error
-pollster_max_error <- pollster_error |> 
-  filter(total_error == max(total_error))
+# Obtener los 5 pollsters con mayor error absoluto
+top_5_mayor_error <- pollster_error |> 
+  arrange(desc(total_error)) |>   # Ordenar por error absoluto descendente
+  slice_head(n = 5)  # Seleccionar las primeras 5 filas
 ```
 
 Debes incluir [**al menos 3 preguntas "originales" más**]{.hl-orange} que consideres interesantes de responder utilizando los datos.
@@ -568,6 +583,11 @@ plt1 <- plt1 +
 plt1
 
 ```
+<<<<<<< Updated upstream
+=======
+
+A partir del gráfico se ve como a partir de las elecciones de 2015 la irrupción de los partidos nuevos fue notables, perjudicando a los tradicionales. Ahora bien, esa bajada repentina se ha estabilizado con el paso de los años.
+>>>>>>> Stashed changes
 
 ¿Y los bloques?
 

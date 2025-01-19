@@ -308,8 +308,13 @@ corr_participacion <-
 # Cuanto menor es el valor de correlación, más se beneficia los votos del partido por la baja participacion.
 
 # Gráficos
-ggplot(corr_participacion, aes(x = reorder(siglas, correlacion), y = correlacion, fill = correlacion)) +
+ggplot(corr_participacion, aes(x = reorder(siglas, correlacion), y = correlacion, fill= siglas)) +
   geom_bar(stat = "identity", show.legend = FALSE) +  # Bar chart
+  scale_fill_manual(values= c(CS = "orange",UP = "purple", 
+                              VOX = "green",OTROS="grey",
+                              MP="#009975", BNG="#6AADE4", PNV="#086522",
+                              CiU="#FFDFC4", ERC="yellow",BILDU="#30D5C8",
+                              PSOE="red", PP="blue"))+
   coord_flip() +  # Flip coordinates for horizontal bars
   labs(
     title = "Correlación entre baja participación y resultados para cada partido",
@@ -392,22 +397,14 @@ wilcox.test(votos_por_zona2$porc_rural, votos_por_zona2$porc_urbana, paired = TR
 barras_rural <- ggplot(votos_por_zona2) +
   geom_col(aes(x = fct_reorder(siglas, dif_perc), y= dif_perc,fill=siglas)) +  
   scale_y_continuous(limits = c(-5, 5)) +  
-  scale_fill_manual(values= c(CS = "orange",
-                              UP = "purple", 
-                              VOX = "green",
-                              OTROS="grey",
-                              MP="#009975",
-                              BNG="#6AADE4",
-                              PNV="#086522",
-                              CiU="#FFDFC4",
-                              ERC="yellow",
-                              BILDU="#30D5C8",
-                              PSOE="red", 
-                              PP="blue"))+
+  scale_fill_manual(values= c(CS = "orange", UP = "purple", VOX = "green",
+                              OTROS="grey",MP="#009975", BNG="#6AADE4",
+                              PNV="#086522",CiU="#FFDFC4",ERC="yellow",
+                              BILDU="#30D5C8",PSOE="red",PP="blue"))+
   theme(axis.text.x = element_text(angle = 45, hjust = 1),
         axis.title.x = element_blank(),
         legend.position = "none",
-        plot.title = element_markdown(family = "Econ Sans Cnd", size = 13,face="bold"))+
+        plot.title = element_markdown( size = 13,face="bold"))+
         labs(title = "Diferencia en porcentaje en zonas rurales y urbanas y anómalos",y="DIFERENCIA (%)")
 
 #GRAFICO CAJAS Y BIGOTES PARA LOS ANOMALOS
@@ -548,9 +545,9 @@ plt1 <- ggplot(resultados_porcentajes, aes(fecha, porcentaje)) +
     axis.ticks.length.x = unit(2, "mm"), #Dejarlas muy pequeñas en el eje x
     axis.title = element_text(size = 14, face = "bold"), # Estilo de títulos de los ejes,
     axis.line.x.bottom = element_line(color = "black"), #línea de abajo negra
-    axis.text.y = element_text(family = "Econ Sans Cnd", size = 10), #customizar los ejes
-    axis.text.x = element_text(family = "Econ Sans Cnd", size = 10,angle = 37,margin = margin(1.75, 0,0,0,"mm")),
-    plot.title = element_markdown(family = "Econ Sans Cnd", size = 17,face = "bold", margin = margin(5,0,5,0))
+    axis.text.y = element_text( size = 10), #customizar los ejes
+    axis.text.x = element_text( size = 10,angle = 37,margin = margin(1.75, 0,0,0,"mm")),
+    plot.title = element_markdown( size = 17,face = "bold", margin = margin(5,0,5,0))
   )+
     guides(size = "none")+
   labs(title = "Evolución de los votos por grupos (%)",y="Porcentaje de votos(%)",x="Fecha")

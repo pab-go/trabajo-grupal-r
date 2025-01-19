@@ -227,7 +227,7 @@ surveys <- surveys |>
 ## Ítems obligatorios
 
 12. Deberás responder obligatoriamente a las siguientes preguntas (más aquellas que consideres analizar para distinguirte del resto)
-
+------------------------------------------------------------------------
 -   ¿Qué partido fue el ganador en los municipios con más de 100.000 habitantes (censo) en cada una de las elecciones?
 
 ```{r}
@@ -285,7 +285,7 @@ ganadores
     resultado_PP <- obtener_segundo_partido(election_data, "PP")
     ```
 
-
+------------------------------------------------------------------------
 -   ¿A quién beneficia la baja participación?
 
 
@@ -320,7 +320,7 @@ ggplot(corr_participacion, aes(x = reorder(siglas, correlacion), y = correlacion
 
 
 ```
-
+------------------------------------------------------------------------
 -   ¿Cómo analizar la relación entre censo y voto? ¿Es cierto que determinados partidos ganan en las zonas rurales?
 
 ```{r}
@@ -371,7 +371,7 @@ ggplot(election_data_rcs, aes(x = censo, y = participacion)) +
 ```
 
 Una vez hechos los contraste de independencia se observa claramente que hay una relación de dependencia, ya que el p-valor es muy bajo. Además, esa relación también se puede observar visualmente a través del gráfico.
-
+------------------------------------------------------------------------
 ```{r}
 
 # Seleccionar el partido ganador por municipio y clasificar por zona
@@ -467,6 +467,8 @@ elecciones_encuestas <- elecciones_encuestas |>
          error_relativo = error_absoluto /total_votantes)
     ```
 
+------------------------------------------------------------------------
+
 -   ¿Qué casas encuestadoras acertaron más y cuáles se desviaron más de los resultados?
 
 ```{r}
@@ -491,7 +493,7 @@ top_5_mayor_error <- pollster_error |>
 ```
 
 Debes incluir [**al menos 3 preguntas "originales" más**]{.hl-orange} que consideres interesantes de responder utilizando los datos.
-
+------------------------------------------------------------------------
 ¿Ha subido el peso de los grandes partidos, de los partidos nacionalistas y de los partidos nuevos a lo largo del tiempo?
 
 ```{r}
@@ -558,6 +560,7 @@ plt1
 ```
 A partir del gráfico se ve como a partir de las elecciones de 2015 la irrupción de los partidos nuevos fue notables, perjudicando a los tradicionales. Ahora bien, esa bajada repentina se ha estabilizado con el paso de los años.
 
+------------------------------------------------------------------------
 ¿Y los bloques?
 
 ```{r}
@@ -620,6 +623,7 @@ ggplot(resultados_porcentajes2, aes(fill = Grupo, values = porcentaje))+
 
 Con los bloques políticos se observa cómo la izquierda y la derecha se han ido intercambiando las mayorías a lo largo de los años. También, la entrada del centro en las escena política afectó principalmente a la derecha, pues la izquierda se mantiene igual.
 
+------------------------------------------------------------------------
 ¿Existen diferencias significativas en los patrones de votos nulos, blancos y no votados entre municipios urbanos y rurales?
 
 ```{r}

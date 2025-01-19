@@ -30,7 +30,7 @@ library(ggnewscale)
 library(waffle)
 library(camcorder)
 library(showtext)
-
+library(sysfonts)
 ```
 
 ------------------------------------------------------------------------
@@ -179,7 +179,7 @@ election_data <-
   election_data |> 
   mutate("siglas" = case_when(
 str_detect(partidos, "SOCIALISTA|SOCIALISTES")~ "PSOE",
-str_detect(partidos, "PARTIDO POPULAR") ~ "PP",
+str_detect(partidos, "PARTIDO POPULAR|PP") ~ "PP",
 str_detect(partidos, "CIUDADANOS|CIUDADANÍA|CIUDADANIA|CIUTADANS") ~ "CS",
 str_detect(partidos, "PARTIDO NACIONALISTA VASCO") ~ "PNV",
 str_detect(partidos, "BLOQUE NACIONALISTA GALEGO") ~ "BNG",
@@ -188,7 +188,7 @@ str_detect(partidos, "ESQUERRA REPUBLICANA DE CAT") ~ "ERC",
 str_detect(partidos, "SORTU|EUSKO ALKARTASUNA|ARALAR|ALTERNATIBA")~"BILDU",
 str_detect(partidos, "MÁS PAÍS|MAS PAIS|MÁS PAIS|MAS PAÍS") ~ "MP",
 str_detect(partidos, "VOX") ~ "VOX",
-str_detect(partidos,"CONVERGÈNCIA I UNIÓ")~"CONVERGÈNCIA I UNIÓ",
+str_detect(partidos,"CONVERGÈNCIA I UNIÓ")~"CiU",
 TRUE ~ "OTROS"))
 
 ```
@@ -325,9 +325,9 @@ ggplot(corr_participacion, aes(x = reorder(siglas, correlacion), y = correlacion
 
 ```{r}
 
-#MEdia de participación en cada municipio
+#Media de participación en cada municipio
 election_data_rcs <- election_data |> 
-    mutate("participacion" = 100*(votos_candidaturas + votos_blancos + votos_nulos) / censo,) |> summarise(participacion=mean(participacion),
+    mutate("participacion" = 100*(votos_candidaturas + votos_blancos + votos_nulos) / censo) |> summarise(participacion=mean(participacion),
           censo=mean(censo), .by = id_mun)
 
 calcular_anomalos <- function(datos, col) {
@@ -335,8 +335,7 @@ calcular_anomalos <- function(datos, col) {
   Q3 <- quantile(datos[[col]], 0.75)
   IQR <- Q3 - Q1
   lim_inf <- Q1 - (IQR * 1.5)
-  lim_sup <- Q3 + (IQR * 31.5)
-  
+  lim_sup <- Q3 + (IQR * 1.5)
   datos <- datos |> 
   filter(censo >= lim_inf & censo <= lim_sup)
   return(datos)
@@ -357,7 +356,7 @@ ggplot(election_data_rcs, aes(x = censo, y = participacion)) +
     x = "Censo",
     y = "Participación (%)"
   ) +
-  theme_minimal(base_size = 14) +  # Tema minimalista
+  theme_minimal(base_size = 14) +
   theme(
     plot.title = element_text(face = "bold", size = 20,vjust = 0.6),  # Personalización del título
     plot.subtitle = element_text(size = 9),
@@ -384,12 +383,10 @@ election_data <- election_data |>
 
 votos_por_zona <- election_data |> summarise(votos=sum(votos), .by = c(zona,siglas))
 
-votos_por_zona2 <- votos_por_zona |> pivot_wider(names_from = zona, values_from = votos) |> mutate(rural=(Rural/sum(Rural))*100, urbana=(Urbana/sum(Urbana))*100, dif_perc=rural-urbana) 
+votos_por_zona2 <- votos_por_zona |> pivot_wider(names_from = zona, values_from = votos) |> mutate(porc_rural=(Rural/sum(Rural))*100, porc_urbana=(Urbana/sum(Urbana))*100, dif_perc=porc_rural-porc_urbana) 
 
 #Test de wilcoxon-MannWhitney
 wilcox.test(votos_por_zona2$rural, votos_por_zona2$urbana, paired = TRUE)
-
-
 
 #Gráfico de barras
 barras_rural <- ggplot(votos_por_zona2) +
@@ -402,7 +399,7 @@ barras_rural <- ggplot(votos_por_zona2) +
                               MP="#009975",
                               BNG="#6AADE4",
                               PNV="#086522",
-                              "CONVERGÈNCIA I UNIÓ"="#FFDFC4",
+                              CiU="#FFDFC4",
                               ERC="yellow",
                               BILDU="#30D5C8",
                               PSOE="red", 
@@ -492,7 +489,7 @@ Debes incluir [**al menos 3 preguntas "originales" más**]{.hl-orange} que consi
 ¿Ha subido el peso de los grandes partidos, de los partidos nacionalistas y de los partidos nuevos a lo largo del tiempo?
 
 ```{r}
- 
+
 #PAso 1: Porcentaje de votos a cada partido por elección
 election_data <- election_data |> mutate("participacion" = (votos_candidaturas + votos_blancos + votos_nulos))
 participacion2 <- election_data |>
@@ -507,7 +504,7 @@ resultados_porcentajes <- election_data |>
     Grupo = case_when(
       str_detect(siglas, "PSOE|PP") ~ "PARTIDO TRADICIONAL",
       str_detect(siglas, "CS|UP|MP|VOX") ~ "PARTIDO NUEVO",
-      str_detect(siglas, "PNV|BNG|ERC|BILDU|CONVERGÈNCIA I UNIÓ") ~ "NACIONALISTA/REGIONALISTA",
+      str_detect(siglas, "PNV|BNG|ERC|BILDU|CiU") ~ "NACIONALISTA/REGIONALISTA",
       TRUE ~ "OTROS"
     )
   )
@@ -543,12 +540,12 @@ plt1 <- ggplot(resultados_porcentajes, aes(fecha, porcentaje)) +
     axis.ticks.length.x = unit(2, "mm"), #Dejarlas muy pequeñas en el eje x
     axis.title = element_text(size = 14, face = "bold"), # Estilo de títulos de los ejes,
     axis.line.x.bottom = element_line(color = "black"), #línea de abajo negra
-    axis.text.y = element_text(family = "Econ Sans Cnd", size = 11), #customizar los ejes
-    axis.text.x = element_text(family = "Econ Sans Cnd", size = 11,angle = 37,margin = margin(1.75, 0,0,0,"mm")),
+    axis.text.y = element_text(family = "Econ Sans Cnd", size = 10), #customizar los ejes
+    axis.text.x = element_text(family = "Econ Sans Cnd", size = 10,angle = 37,margin = margin(1.75, 0,0,0,"mm")),
     plot.title = element_markdown(family = "Econ Sans Cnd", size = 17,face = "bold", margin = margin(5,0,5,0))
   )+
     guides(size = "none")+
-  labs(title = "Evolución de los votos por grupos (%)")
+  labs(title = "Evolución de los votos por grupos (%)",y="Porcentaje de votos(%)",x="Fecha")
 
 plt1
 
@@ -564,7 +561,7 @@ resultados_porcentajes2 <- election_data |>
     Grupo = case_when(
       str_detect(siglas, "VOX|PP") ~ "DERECHAS",
       str_detect(siglas, "PSOE|UP|MP") ~ "IZQUIERDAS",
-      str_detect(siglas, "PNV|BNG|ERC|BILDU|CONVERGÈNCIA I UNIÓ") ~ "NACIONALISTA/REGIONALISTA",
+      str_detect(siglas, "PNV|BNG|ERC|BILDU|CiU") ~ "NACIONALISTA/REGIONALISTA",
       str_detect(siglas, "CS") ~ "CENTRO",
       TRUE ~ "OTROS"
     )

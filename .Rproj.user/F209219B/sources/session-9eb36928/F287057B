@@ -1,0 +1,65 @@
+{
+    "id": "F287057B",
+    "path": "C:/Users/cyanm/Downloads/trabajo-grupal-r/grupal.qmd",
+    "project_path": "grupal.qmd",
+    "type": "quarto_markdown",
+<<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-9eb36928/F287057B
+    "hash": "2385731756",
+========
+    "hash": "2582270999",
+>>>>>>>> Stashed changes:.Rproj.user/F209219B/sources/session-d11abd29/F287057B
+    "contents": "",
+    "dirty": true,
+    "created": 1735899990965.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+<<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-9eb36928/F287057B
+        "cursorPosition": "4,11",
+        "scrollLine": "0",
+========
+        "cursorPosition": "499,0",
+        "scrollLine": "15",
+>>>>>>>> Stashed changes:.Rproj.user/F209219B/sources/session-d11abd29/F287057B
+        "rmdVisualMode": "true",
+        "rmdVisualWrapConfigured": "true",
+        "docOutlineVisible": "1",
+        "rmdVisualCollapsedChunks": "",
+<<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-9eb36928/F287057B
+<<<<<<<< Updated upstream:.Rproj.user/F209219B/sources/session-b0d360a2/F287057B
+        "rmdVisualModeLocation": "16369:0",
+        "docOutlineSize": "80"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1736679259,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1736679259669,
+========
+        "rmdVisualModeLocation": "18697:9317",
+        "docOutlineSize": "80"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1737044905,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1737044977052,
+>>>>>>>> Stashed changes:.Rproj.user/F209219B/sources/session-9eb36928/F287057B
+========
+        "rmdVisualModeLocation": "17047:12172",
+        "docOutlineSize": "80"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1737216670,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1737216670730,
+>>>>>>>> Stashed changes:.Rproj.user/F209219B/sources/session-d11abd29/F287057B
+    "read_only": false,
+    "read_only_alternatives": []
+}
